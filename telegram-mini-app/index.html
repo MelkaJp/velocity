@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeloCity - Fuel Wallet</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        :root { --primary: #0D1B2A; --secondary: #1B263B; --accent: #2EC4B6; --blue: #3A86FF; --success: #06D6A0; --warning: #FF6B35; --danger: #EF476F; --text: #fff; --text-muted: #8D99AE; }
+        body { background: var(--primary); color: var(--text); min-height: 100vh; padding-bottom: env(safe-area-inset-bottom); }
+        
+        .header { padding: 16px; background: var(--secondary); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.25rem; color: var(--accent); }
+        .header .balance { font-family: monospace; font-size: 1.5rem; font-weight: bold; color: var(--success); }
+        
+        .tabs { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; }
+        .tab { padding: 8px 16px; background: transparent; color: var(--text-muted); border: none; border-radius: 20px; font-size: 0.875rem; white-space: nowrap; }
+        .tab.active { background: var(--accent); color: var(--primary); font-weight: 600; }
+        
+        .section { padding: 16px; }
+        .section-title { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .vehicle-card { background: var(--secondary); border-radius: 12px; padding: 16px; margin-bottom: 12px; border-left: 4px solid var(--accent); }
+        .vehicle-card.bajaj { border-color: var(--accent); }
+        .vehicle-card.automobile { border-color: var(--blue); }
+        .vehicle-card.truck { border-color: #212529; }
+        .vehicle-plate { font-family: monospace; font-size: 1.25rem; font-weight: bold; }
+        .vehicle-type { font-size: 0.8rem; color: var(--text-muted); }
+        .vehicle-wallet { margin-top: 8px; font-size: 0.9rem; }
+        .vehicle-wallet span { color: var(--success); font-weight: 600; }
+        
+        .qr-display { background: white; padding: 20px; border-radius: 12px; text-align: center; margin: 16px 0; }
+        .qr-code { width: 150px; height: 150px; margin: 0 auto; }
+        
+        .transaction { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--secondary); border-radius: 8px; margin-bottom: 8px; }
+        .tx-info h4 { font-size: 0.95rem; }
+        .tx-info p { font-size: 0.8rem; color: var(--text-muted); }
+        .tx-amount { text-align: right; }
+        .tx-amount .liters { display: block; font-weight: 600; }
+        .tx-amount .price { font-size: 0.8rem; color: var(--text-muted); }
+        
+        .station-card { background: var(--secondary); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .station-name { font-weight: 600; margin-bottom: 4px; }
+        .station-location { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
+        .station-inventory { display: flex; align-items: center; gap: 8px; }
+        .inventory-bar { flex: 1; height: 8px; background: var(--primary); border-radius: 4px; overflow: hidden; }
+        .inventory-fill { height: 100%; background: var(--success); }
+        .inventory-text { font-size: 0.8rem; color: var(--text-muted); }
+        
+        .btn { width: 100%; padding: 14px; background: var(--accent); color: var(--primary); border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; margin-top: 16px; }
+        .btn-secondary { background: var(--secondary); color: var(--text); }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 8px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background: var(--secondary); border: 1px solid #3D4F65; border-radius: 8px; color: var(--text); font-size: 1rem; }
+        .form-group input:focus { border-color: var(--accent); outline: none; }
+        
+        .empty { text-align: center; padding: 40px; color: var(--text-muted); }
+        
+        .loading { text-align: center; padding: 40px; }
+        .spinner { width: 40px; height: 40px; border: 3px solid var(--secondary); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="loading"><div class="spinner"></div><p>Loading...</p></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        let currentTab = 'wallet';
+        let vehicles = [];
+        let transactions = [];
+        let stations = [];
+        
+        async function fetchData() {
+            try {
+                const [v, t, s] = await Promise.all([
+                    fetch(API_BASE + '/vehicles').then(r => r.json()).catch(() => []),
+                    fetch(API_BASE + '/transactions').then(r => r.json()).catch(() => []),
+                    fetch(API_BASE + '/stations').then(r => r.json()).catch(() => [])
+                ]);
+                vehicles = v;
+                transactions = t;
+                stations = s;
+            } catch (e) {
+                console.error('API error:', e);
+            }
+        }
+        
+        async function registerVehicle(data) {
+            const res = await fetch(API_BASE + '/vehicles/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            return res.json();
+        }
+        
+        async function topupWallet(vehicleId, amount) {
+            const res = await fetch(API_BASE + '/wallet/topup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({vehicle_id: vehicleId, amount})
+            });
+            return res.json();
+        }
+        
+        function render() {
+            const app = document.getElementById('app');
+            
+            const totalBalance = vehicles.reduce((sum, v) => {
+                return sum + (v.wallet?.balance || 0);
+            }, 0);
+            
+            let content = '';
+            
+            if (currentTab === 'wallet') {
+                content = `
+                    <div class="header">
+                        <h1>⛽ VeloCity</h1>
+                        <div class="balance">$${totalBalance.toFixed(2)}</div>
+                    </div>
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTab('wallet')">💰 Wallet</button>
+                        <button class="tab" onclick="switchTab('vehicles')">🚗 Vehicles</button>
+                        <button class="tab" onclick="switchTab('history')">📜 History</button>
+                        <button class="tab" onclick="switchTab('stations')">⛽ Stations</button>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">Your Vehicles</div>
+                        ${vehicles.length === 0 ? '<div class="empty">No vehicles registered. Go to Vehicles tab to register.</div>' : ''}
+                        ${vehicles.map(v => `
+                            <div class="vehicle-card ${v.type}">
+                                <div class="vehicle-plate">${v.plate}</div>
+                                <div class="vehicle-type">${v.type.toUpperCase()}</div>
+                                <div class="vehicle-wallet">Balance: <span>$${(v.wallet?.balance || 0).toFixed(2)}</span></div>
+                                <div class="qr-display">
+                                    <canvas class="qr-code" id="qr-${v.id}"></canvas>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (currentTab === 'vehicles') {
+                content = `
+                    <div class="header">
+                        <h1>🚗 My Vehicles</h1>
+                    </div>
+                    <div class="tabs">
+                        <button class="tab" onclick="switchTab('wallet')">💰 Wallet</button>
+                        <button class="tab active" onclick="switchTab('vehicles')">🚗 Vehicles</button>
+                        <button class="tab" onclick="switchTab('history')">📜 History</button>
+                        <button class="tab" onclick="switchTab('stations')">⛽ Stations</button>
+                    </div>
+                    <div class="section">
+                        <button class="btn" onclick="showRegisterForm()">+ Register New Vehicle</button>
+                        <div id="register-form" style="display:none; margin-top: 16px;">
+                            <div class="form-group">
+                                <label>Vehicle Type</label>
+                                <select id="reg-type">
+                                    <option value="bajaj">🛑 Bajaj (Green)</option>
+                                    <option value="automobile">🚗 Automobile (Blue)</option>
+                                    <option value="truck">🚛 Truck (Black)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Plate Number</label>
+                                <input type="text" id="reg-plate" placeholder="ABC-1234">
+                            </div>
+                            <div class="form-group">
+                                <label>Tank Capacity (Liters)</label>
+                                <input type="number" id="reg-capacity" value="35">
+                            </div>
+                            <div class="form-group">
+                                <label>Owner Name</label>
+                                <input type="text" id="reg-name" placeholder="Full Name">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <input type="tel" id="reg-phone" placeholder="+1234567890">
+                            </div>
+                            <button class="btn" onclick="submitRegister()">Register Vehicle</button>
+                        </div>
+                        ${vehicles.map(v => `
+                            <div class="vehicle-card ${v.type}">
+                                <div class="vehicle-plate">${v.plate}</div>
+                                <div class="vehicle-type">${v.type.toUpperCase()} - ${v.tank_capacity}L tank</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (currentTab === 'history') {
+                content = `
+                    <div class="header">
+                        <h1>📜 History</h1>
+                    </div>
+                    <div class="tabs">
+                        <button class="tab" onclick="switchTab('wallet')">💰 Wallet</button>
+                        <button class="tab" onclick="switchTab('vehicles')">🚗 Vehicles</button>
+                        <button class="tab active" onclick="switchTab('history')">📜 History</button>
+                        <button class="tab" onclick="switchTab('stations')">⛽ Stations</button>
+                    </div>
+                    <div class="section">
+                        ${transactions.length === 0 ? '<div class="empty">No transactions yet</div>' : ''}
+                        ${transactions.slice(0, 20).map(tx => `
+                            <div class="transaction">
+                                <div class="tx-info">
+                                    <h4>${tx.vehicle_plate}</h4>
+                                    <p>${tx.station_name}</p>
+                                </div>
+                                <div class="tx-amount">
+                                    <span class="liters">${tx.liters}L</span>
+                                    <span class="price">$${tx.amount}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (currentTab === 'stations') {
+                content = `
+                    <div class="header">
+                        <h1>⛽ Stations</h1>
+                    </div>
+                    <div class="tabs">
+                        <button class="tab" onclick="switchTab('wallet')">💰 Wallet</button>
+                        <button class="tab" onclick="switchTab('vehicles')">🚗 Vehicles</button>
+                        <button class="tab" onclick="switchTab('history')">📜 History</button>
+                        <button class="tab active" onclick="switchTab('stations')">⛽ Stations</button>
+                    </div>
+                    <div class="section">
+                        ${stations.map(s => {
+                            const pct = Math.min((s.inventory / 20000) * 100, 100);
+                            return `
+                                <div class="station-card">
+                                    <div class="station-name">${s.name}</div>
+                                    <div class="station-location">📍 ${s.location}</div>
+                                    <div class="station-inventory">
+                                        <div class="inventory-bar"><div class="inventory-fill" style="width:${pct}%"></div></div>
+                                        <span class="inventory-text">${s.inventory}L</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
+            
+            app.innerHTML = content;
+            
+            vehicles.forEach(v => {
+                if (v.qr_code) {
+                    generateQR(v.qr_code, `qr-${v.id}`);
+                }
+            });
+        }
+        
+        function switchTab(tab) {
+            currentTab = tab;
+            render();
+        }
+        
+        function showRegisterForm() {
+            document.getElementById('register-form').style.display = 'block';
+        }
+        
+        async function submitRegister() {
+            const data = {
+                type: document.getElementById('reg-type').value,
+                plate: document.getElementById('reg-plate').value,
+                tank_capacity: parseInt(document.getElementById('reg-capacity').value),
+                owner_name: document.getElementById('reg-name').value,
+                phone: document.getElementById('reg-phone').value
+            };
+            
+            const result = await registerVehicle(data);
+            if (result.success) {
+                await fetchData();
+                switchTab('wallet');
+                tg.showAlert('Vehicle registered successfully!');
+            } else {
+                tg.showAlert('Registration failed: ' + (result.detail || 'Unknown error'));
+            }
+        }
+        
+        function generateQR(text, canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const size = 150;
+            canvas.width = size;
+            canvas.height = size;
+            
+            const qr = generateQRMatrix(text, size);
+            ctx.fillStyle = '#000';
+            for (let y = 0; y < qr.length; y++) {
+                for (let x = 0; x < qr[y].length; x++) {
+                    if (qr[y][x]) {
+                        ctx.fillRect(x * 4, y * 4, 4, 4);
+                    }
+                }
+            }
+        }
+        
+        function generateQRMatrix(text, size) {
+            const modules = Math.floor((size - 20) / 4);
+            const matrix = [];
+            for (let i = 0; i < modules; i++) {
+                matrix.push(new Array(modules).fill(false));
+            }
+            
+            for (let i = 0; i < 7; i++) {
+                for (let j = 0; j < 7; j++) {
+                    const isFinder = (i < 8 && j < 8) || (i < 8 && j >= modules - 8) || (i >= modules - 8 && j < 8);
+                    if (isFinder) {
+                        const isBorder = i === 0 || i === 6 || j === 0 || j === 6 || (i >= 2 && i <= 4 && j >= 2 && j <= 4);
+                        matrix[i][j] = isBorder;
+                    }
+                }
+            }
+            
+            let hash = 0;
+            for (let i = 0; i < text.length; i++) {
+                hash = ((hash << 5) - hash) + text.charCodeAt(i);
+                hash = hash & hash;
+            }
+            
+            for (let i = 8; i < modules - 8; i++) {
+                for (let j = 8; j < modules - 8; j++) {
+                    if (i >= 8 && i < 11 && j >= 8 && j < 11) continue;
+                    matrix[i][j] = (hash >> ((i + j) % 32)) & 1;
+                }
+            }
+            
+            return matrix;
+        }
+        
+        fetchData().then(() => {
+            render();
+            tg.ready();
+        });
+    </script>
+</body>
+</html>

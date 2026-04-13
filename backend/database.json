@@ -1,0 +1,55 @@
+{
+  "vehicles": {},
+  "transactions": {},
+  "stations": {
+    "ST001": {
+      "id": "ST001",
+      "name": "Central Station",
+      "location": "Downtown",
+      "inventory": 15000,
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "status": "active"
+    },
+    "ST002": {
+      "id": "ST002",
+      "name": "North Express",
+      "location": "North District",
+      "inventory": 12000,
+      "latitude": 40.7589,
+      "longitude": -73.9851,
+      "status": "active"
+    },
+    "ST003": {
+      "id": "ST003",
+      "name": "East Point",
+      "location": "East Industrial",
+      "inventory": 18000,
+      "latitude": 40.7484,
+      "longitude": -73.9857,
+      "status": "active"
+    },
+    "ST004": {
+      "id": "ST004",
+      "name": "South Gate",
+      "location": "South Highway",
+      "inventory": 10000,
+      "latitude": 40.6892,
+      "longitude": -74.0445,
+      "status": "active"
+    },
+    "ST005": {
+      "id": "ST005",
+      "name": "West Terminal",
+      "location": "West End",
+      "inventory": 14000,
+      "latitude": 40.7282,
+      "longitude": -73.7949,
+      "status": "active"
+    }
+  },
+  "wallets": {},
+  "bookings": {},
+  "deliveries": {},
+  "audit_logs": []
+}
