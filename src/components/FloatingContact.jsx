@@ -1,8 +1,8 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   MessageCircle, Send, Phone, X, HelpCircle, ChevronDown,
   Search, Mail, ThumbsUp, ExternalLink, FileText, CreditCard, Truck,
-  Shield, Fuel, User, Settings, AlertCircle, Clock, LifeBuoy
+  Shield, Fuel, User, Settings, AlertCircle, Clock, LifeBuoy, MessageSquare
 } from 'lucide-react';
 import './FloatingContact.css';
 
@@ -70,36 +70,36 @@ const quickContact = contactChannels.slice(0, 3);
 
 function FaqContent({ search, setSearch, filtered, expanded, toggleQuestion }) {
   return (
-    <div className="help-faq">
-      <div className="help-search">
+    <div className="hf-faq">
+      <div className="hf-search">
         <Search size={15} />
-        <input type="text" placeholder="Search FAQs..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input type="text" placeholder="Search FAQs..." value={search} onChange={e => setSearch(e.target.value)} />
       </div>
-      <div className="help-faq-list">
+      <div className="hf-list">
         {filtered.length === 0 ? (
-          <div className="help-no-results">
+          <div className="hf-empty">
             <AlertCircle size={22} />
             <p>No results for "{search}"</p>
           </div>
         ) : (
           filtered.map((cat, ci) => (
-            <div key={ci} className="help-category">
-              <div className="help-category-header">
+            <div key={ci} className="hf-cat">
+              <div className="hf-cat-title">
                 <cat.icon size={14} />
                 <span>{cat.category}</span>
               </div>
               {cat.questions.map((item, qi) => {
                 const id = `${ci}-${qi}`;
                 return (
-                  <div key={id} className={`help-question ${expanded === id ? 'expanded' : ''}`}>
-                    <button className="help-question-btn" onClick={() => toggleQuestion(id)}>
+                  <div key={id} className={`hf-q ${expanded === id ? 'is-open' : ''}`}>
+                    <button className="hf-q-btn" onClick={() => toggleQuestion(id)}>
                       <span>{item.q}</span>
-                      <ChevronDown size={14} className="help-chevron" />
+                      <ChevronDown size={14} className="hf-chevron" />
                     </button>
                     {expanded === id && (
-                      <div className="help-answer">
+                      <div className="hf-a">
                         <p>{item.a}</p>
-                        <button className="help-feedback" onClick={(e) => { e.stopPropagation(); }}>
+                        <button className="hf-like" onClick={e => e.stopPropagation()}>
                           <ThumbsUp size={11} /> Helpful
                         </button>
                       </div>
@@ -115,50 +115,22 @@ function FaqContent({ search, setSearch, filtered, expanded, toggleQuestion }) {
   );
 }
 
-function ContactContent({ channels, compact }) {
+function ContactContent({ channels }) {
   return (
-    <div className="help-contact">
-      <p className="help-contact-intro">Choose how to reach us. We typically respond within minutes.</p>
-      <div className="help-contact-list">
+    <div className="hf-contact">
+      <p className="hf-contact-intro">Choose how to reach us. We typically respond within minutes.</p>
+      <div className="hf-contact-list">
         {channels.map((opt, idx) => (
-          <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" className="help-contact-card" style={{ borderLeftColor: opt.color }}>
-            <div className="help-contact-icon" style={{ background: opt.color }}><opt.icon size={compact ? 18 : 20} /></div>
-            <div className="help-contact-info"><strong>{opt.label}</strong><span>{opt.sub}</span></div>
-            <ExternalLink size={compact ? 14 : 16} className="help-contact-ext" />
+          <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" className="hf-contact-card" style={{ borderLeftColor: opt.color }}>
+            <div className="hf-contact-icon" style={{ background: opt.color }}><opt.icon size={20} /></div>
+            <div className="hf-contact-info"><strong>{opt.label}</strong><span>{opt.sub}</span></div>
+            <ExternalLink size={16} className="hf-contact-ext" />
           </a>
         ))}
       </div>
-      <div className="help-response-time">
-        <Clock size={compact ? 12 : 14} />
+      <div className="hf-response">
+        <Clock size={14} />
         <span>Average response: &lt; 5 minutes</span>
-      </div>
-    </div>
-  );
-}
-
-function HelpPanel({ activeTab, setActiveTab, search, setSearch, filtered, expanded, toggleQuestion, onClose, compact }) {
-  return (
-    <div className={`help-panel${compact ? ' help-panel--mobile' : ''}`}>
-      <div className="help-panel-header">
-        <HelpCircle size={compact ? 20 : 22} />
-        <span>Help & Support</span>
-        <button className="help-panel-close" onClick={onClose}><X size={18} /></button>
-      </div>
-      <div className="help-tabs">
-        <button className={`help-tab ${activeTab === 'faq' ? 'active' : ''}`} onClick={() => setActiveTab('faq')}>
-          <FileText size={compact ? 14 : 16} /> FAQ
-        </button>
-        <button className={`help-tab ${activeTab === 'contact' ? 'active' : ''}`} onClick={() => setActiveTab('contact')}>
-          <MessageSquare size={compact ? 14 : 16} /> Contact
-        </button>
-      </div>
-      {activeTab === 'faq' ? (
-        <FaqContent search={search} setSearch={setSearch} filtered={filtered} expanded={expanded} toggleQuestion={toggleQuestion} />
-      ) : (
-        <ContactContent channels={contactChannels} compact={compact} />
-      )}
-      <div className="help-panel-footer">
-        <span>VeloCity v{import.meta.env.VITE_APP_VERSION || '2.0'}</span>
       </div>
     </div>
   );
@@ -170,10 +142,10 @@ export default function FloatingContact() {
   const [activeTab, setActiveTab] = useState('faq');
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [mobile, setMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth <= 768);
+    const onResize = () => setMobile(window.innerWidth <= 768);
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
@@ -183,62 +155,62 @@ export default function FloatingContact() {
     const q = search.toLowerCase();
     return faqData.map(cat => ({
       ...cat,
-      questions: cat.questions.filter(item =>
-        item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q)
-      ),
+      questions: cat.questions.filter(item => item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q)),
     })).filter(cat => cat.questions.length > 0);
   }, [search]);
 
-  const toggleQuestion = useCallback((id) => {
-    setExpanded(prev => prev === id ? null : id);
-  }, []);
+  const toggleQuestion = (id) => setExpanded(prev => prev === id ? null : id);
 
-  const closeAll = useCallback(() => {
-    setHelpOpen(false);
-    setContactOpen(false);
-    setSearch('');
-    setExpanded(null);
-  }, []);
+  const openHelp = () => { setHelpOpen(true); setContactOpen(false); };
+  const toggleContact = () => { setContactOpen(o => !o); setHelpOpen(false); };
+  const closeAll = () => { setHelpOpen(false); setContactOpen(false); setSearch(''); setExpanded(null); };
 
-  const openHelp = useCallback(() => {
-    setHelpOpen(true);
-    setContactOpen(false);
-  }, []);
+  const helpPanel = (
+    <div className={`help-floating ${mobile ? 'help-floating--mobile' : ''}`}>
+      <div className="hf-header">
+        <HelpCircle size={20} />
+        <span>Help & Support</span>
+        <button className="hf-close" onClick={closeAll}><X size={18} /></button>
+      </div>
+      <div className="hf-tabs">
+        <button className={`hf-tab ${activeTab === 'faq' ? 'active' : ''}`} onClick={() => setActiveTab('faq')}>
+          <FileText size={14} /> FAQ
+        </button>
+        <button className={`hf-tab ${activeTab === 'contact' ? 'active' : ''}`} onClick={() => setActiveTab('contact')}>
+          <MessageSquare size={14} /> Contact
+        </button>
+      </div>
+      {activeTab === 'faq' ? (
+        <FaqContent search={search} setSearch={setSearch} filtered={filtered} expanded={expanded} toggleQuestion={toggleQuestion} />
+      ) : (
+        <ContactContent channels={contactChannels} />
+      )}
+      <div className="hf-footer">VeloCity v{import.meta.env.VITE_APP_VERSION || '2.0'}</div>
+    </div>
+  );
 
-  const toggleContact = useCallback(() => {
-    setContactOpen(prev => !prev);
-    setHelpOpen(false);
-  }, []);
-
-  if (isMobile) {
+  if (mobile) {
     return (
       <>
         {helpOpen && <div className="help-overlay" onClick={closeAll} />}
-        {helpOpen && (
-          <HelpPanel
-            activeTab={activeTab} setActiveTab={setActiveTab}
-            search={search} setSearch={setSearch}
-            filtered={filtered} expanded={expanded} toggleQuestion={toggleQuestion}
-            onClose={closeAll} compact
-          />
-        )}
+        {helpOpen && helpPanel}
         {contactOpen && (
-          <div className="quick-contact-popup">
+          <div className="m-contact-popup">
             {quickContact.map((opt, idx) => (
-              <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" className="quick-contact-item" style={{ animationDelay: `${idx * 0.08}s` }}>
-                <div className="quick-contact-badge" style={{ background: opt.color }}><opt.icon size={18} /></div>
+              <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" className="m-contact-item" style={{ animationDelay: `${idx * 0.08}s` }}>
+                <div className="m-contact-badge" style={{ background: opt.color }}><opt.icon size={18} /></div>
                 <span>{opt.label}</span>
               </a>
             ))}
           </div>
         )}
-        <div className="mobile-help-bar">
-          <button className="mhb-btn" onClick={openHelp}>
-            <LifeBuoy size={20} />
+        <div className="mobile-bar">
+          <button className="mb-btn" onClick={openHelp}>
+            <HelpCircle size={20} />
             <span>Help</span>
           </button>
-          <div className="mhb-divider" />
-          <button className="mhb-btn" onClick={toggleContact}>
+          <div className="mb-divider" />
+          <button className="mb-btn" onClick={toggleContact}>
             <MessageCircle size={20} />
             <span>Contact</span>
           </button>
@@ -248,38 +220,29 @@ export default function FloatingContact() {
   }
 
   return (
-    <div className="fc-wrapper">
-      {helpOpen && (
-        <HelpPanel
-          activeTab={activeTab} setActiveTab={setActiveTab}
-          search={search} setSearch={setSearch}
-          filtered={filtered} expanded={expanded} toggleQuestion={toggleQuestion}
-          onClose={closeAll}
-        />
-      )}
+    <div className="fc-desktop">
+      {helpOpen && helpPanel}
       {contactOpen && (
-        <div className="fc-quick-list">
+        <div className="fc-contact-list">
           {quickContact.map((opt, idx) => (
-            <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" className="fc-quick-item" style={{ animationDelay: `${idx * 0.08}s` }}>
-              <div className="fc-quick-badge" style={{ background: opt.color }}><opt.icon size={18} /></div>
+            <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" className="fc-contact-item" style={{ animationDelay: `${idx * 0.08}s` }}>
+              <div className="fc-contact-badge" style={{ background: opt.color }}><opt.icon size={18} /></div>
               <span>{opt.label}</span>
             </a>
           ))}
         </div>
       )}
       {helpOpen || contactOpen ? (
-        <button className="fc-btn fc-btn--close" onClick={closeAll}>
-          <X size={18} />
+        <button className="fc-circle fc-circle--close" onClick={closeAll}>
+          <X size={20} />
         </button>
       ) : (
-        <div className="fc-btn-group">
-          <button className="fc-btn fc-btn--contact" onClick={toggleContact}>
-            <MessageCircle size={18} />
-            <span>Contact</span>
+        <div className="fc-circle-group">
+          <button className="fc-circle fc-circle--contact" onClick={toggleContact} title="Contact">
+            <MessageCircle size={22} />
           </button>
-          <button className="fc-btn fc-btn--help" onClick={openHelp}>
-            <LifeBuoy size={18} />
-            <span>Help</span>
+          <button className="fc-circle fc-circle--help" onClick={openHelp} title="Help">
+            <HelpCircle size={22} />
           </button>
         </div>
       )}

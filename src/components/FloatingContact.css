@@ -1,5 +1,5 @@
-/* ===== Wrapper ===== */
-.fc-wrapper {
+/* ===== Desktop wrapper ===== */
+.fc-desktop {
   position: fixed;
   bottom: 90px;
   right: 24px;
@@ -10,68 +10,63 @@
   gap: 10px;
 }
 
-/* ===== Travel-agency style buttons ===== */
-.fc-btn-group {
+/* ===== Circular buttons ===== */
+.fc-circle-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
-.fc-btn {
+.fc-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  color: #fff;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 10px;
-  color: #fff;
-  font-size: 0.9rem;
-  font-weight: 600;
+  justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   transition: all 0.25s ease;
-  white-space: nowrap;
-  letter-spacing: 0.3px;
 }
 
-.fc-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+.fc-circle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
 }
 
-.fc-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+.fc-circle:active {
+  transform: scale(0.95);
 }
 
-.fc-btn--help {
+.fc-circle--help {
   background: linear-gradient(135deg, #00d4aa, #00b894);
 }
 
-.fc-btn--contact {
+.fc-circle--contact {
   background: linear-gradient(135deg, #0088cc, #006699);
 }
 
-.fc-btn--close {
+.fc-circle--close {
   background: #ef4444;
-  padding: 12px 16px;
-  border-radius: 50%;
-  justify-content: center;
+  width: 48px;
+  height: 48px;
 }
 
-.fc-btn--close:hover {
+.fc-circle--close:hover {
   transform: scale(1.1);
 }
 
-/* ===== Desktop quick contact list ===== */
-.fc-quick-list {
+/* ===== Desktop quick contact ===== */
+.fc-contact-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-bottom: 4px;
 }
 
-.fc-quick-item {
+.fc-contact-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -88,19 +83,19 @@
   transition: all 0.2s ease;
 }
 
-.fc-quick-item:hover {
+.fc-contact-item:hover {
   transform: translateX(-4px);
   border-color: var(--text-secondary);
 }
 
-.fc-quick-badge {
+.fc-contact-badge {
   width: 36px;
   height: 36px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #fff;
   flex-shrink: 0;
 }
 
@@ -109,7 +104,7 @@
   to { opacity: 1; transform: translateX(0); }
 }
 
-/* ===== Help panel ===== */
+/* ===== Floating Help Panel ===== */
 .help-overlay {
   position: fixed;
   inset: 0;
@@ -118,7 +113,7 @@
   animation: fade-in 0.2s ease;
 }
 
-.help-panel {
+.help-floating {
   position: absolute;
   bottom: 70px;
   right: 0;
@@ -134,7 +129,7 @@
   animation: help-in 0.25s ease;
 }
 
-.help-panel--mobile {
+.help-floating--mobile {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -157,7 +152,8 @@
   to { transform: translateY(0); }
 }
 
-.help-panel-header {
+/* ===== Help panel internals ===== */
+.hf-header {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -168,9 +164,9 @@
   font-size: 1.05rem;
 }
 
-.help-panel-header svg { color: var(--accent-green); }
+.hf-header svg { color: var(--accent-green); }
 
-.help-panel-close {
+.hf-close {
   margin-left: auto;
   background: none;
   border: none;
@@ -181,23 +177,22 @@
   transition: var(--transition);
 }
 
-.help-panel-close:hover {
+.hf-close:hover {
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
 }
 
-/* ===== Tabs ===== */
-.help-tabs {
+.hf-tabs {
   display: flex;
   border-bottom: 1px solid var(--border);
 }
 
-.help-tab {
+.hf-tab {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   padding: 12px;
   background: none;
   border: none;
@@ -208,25 +203,25 @@
   border-bottom: 2px solid transparent;
 }
 
-.help-tab.active {
+.hf-tab.active {
   color: var(--accent-green);
   border-bottom-color: var(--accent-green);
 }
 
-.help-tab:hover:not(.active) {
+.hf-tab:hover:not(.active) {
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* ===== FAQ ===== */
-.help-faq {
+/* FAQ tab */
+.hf-faq {
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
 
-.help-search {
+.hf-search {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -238,7 +233,7 @@
   color: var(--text-secondary);
 }
 
-.help-search input {
+.hf-search input {
   flex: 1;
   background: none;
   border: none;
@@ -247,11 +242,11 @@
   font-size: 0.85rem;
 }
 
-.help-search input::placeholder { color: var(--text-muted); }
+.hf-search input::placeholder { color: var(--text-muted); }
 
-.help-faq-list { padding: 0 16px 16px; }
+.hf-list { padding: 0 16px 16px; }
 
-.help-no-results {
+.hf-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -261,9 +256,9 @@
   text-align: center;
 }
 
-.help-category { margin-bottom: 16px; }
+.hf-cat { margin-bottom: 16px; }
 
-.help-category-header {
+.hf-cat-title {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -275,9 +270,9 @@
   letter-spacing: 0.5px;
 }
 
-.help-category-header svg { color: var(--accent-green); }
+.hf-cat-title svg { color: var(--accent-green); }
 
-.help-question {
+.hf-q {
   border: 1px solid var(--border);
   border-radius: 8px;
   margin-bottom: 6px;
@@ -285,9 +280,9 @@
   transition: var(--transition);
 }
 
-.help-question.expanded { border-color: rgba(0, 212, 170, 0.3); }
+.hf-q.is-open { border-color: rgba(0, 212, 170, 0.3); }
 
-.help-question-btn {
+.hf-q-btn {
   width: 100%;
   display: flex;
   align-items: center;
@@ -302,32 +297,31 @@
   transition: var(--transition);
 }
 
-.help-question-btn:hover { background: rgba(255, 255, 255, 0.02); }
+.hf-q-btn:hover { background: rgba(255, 255, 255, 0.02); }
+.hf-q-btn span { flex: 1; line-height: 1.3; }
 
-.help-question-btn span { flex: 1; line-height: 1.3; }
-
-.help-chevron {
+.hf-chevron {
   flex-shrink: 0;
   color: var(--text-muted);
   transition: transform 0.2s ease;
 }
 
-.help-question.expanded .help-chevron { transform: rotate(180deg); }
+.hf-q.is-open .hf-chevron { transform: rotate(180deg); }
 
-.help-answer {
+.hf-a {
   padding: 0 12px 12px;
   border-top: 1px solid var(--border);
   animation: fade-in 0.2s ease;
 }
 
-.help-answer p {
+.hf-a p {
   margin: 10px 0;
   font-size: 0.8rem;
   color: var(--text-secondary);
   line-height: 1.5;
 }
 
-.help-feedback {
+.hf-like {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -341,15 +335,15 @@
   transition: var(--transition);
 }
 
-.help-feedback:hover { background: rgba(0, 212, 170, 0.2); }
+.hf-like:hover { background: rgba(0, 212, 170, 0.2); }
 
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-/* ===== Contact tab ===== */
-.help-contact {
+/* Contact tab */
+.hf-contact {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
@@ -358,16 +352,16 @@
   gap: 10px;
 }
 
-.help-contact-intro {
+.hf-contact-intro {
   font-size: 0.82rem;
   color: var(--text-secondary);
   margin: 0;
   padding-bottom: 6px;
 }
 
-.help-contact-list { display: flex; flex-direction: column; gap: 8px; }
+.hf-contact-list { display: flex; flex-direction: column; gap: 8px; }
 
-.help-contact-card {
+.hf-contact-card {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -381,28 +375,28 @@
   transition: var(--transition);
 }
 
-.help-contact-card:hover {
+.hf-contact-card:hover {
   background: rgba(255, 255, 255, 0.04);
   border-color: var(--text-secondary);
 }
 
-.help-contact-icon {
+.hf-contact-icon {
   width: 40px;
   height: 40px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #fff;
   flex-shrink: 0;
 }
 
-.help-contact-info { flex: 1; }
-.help-contact-info strong { display: block; font-size: 0.9rem; }
-.help-contact-info span { font-size: 0.75rem; color: var(--text-muted); }
-.help-contact-ext { color: var(--text-muted); flex-shrink: 0; }
+.hf-contact-info { flex: 1; }
+.hf-contact-info strong { display: block; font-size: 0.9rem; }
+.hf-contact-info span { font-size: 0.75rem; color: var(--text-muted); }
+.hf-contact-ext { color: var(--text-muted); flex-shrink: 0; }
 
-.help-response-time {
+.hf-response {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -414,7 +408,7 @@
   margin-top: auto;
 }
 
-.help-panel-footer {
+.hf-footer {
   padding: 8px 16px;
   border-top: 1px solid var(--border);
   font-size: 0.7rem;
@@ -422,8 +416,8 @@
   text-align: center;
 }
 
-/* ===== Mobile quick contact popup ===== */
-.quick-contact-popup {
+/* ===== Mobile contact popup ===== */
+.m-contact-popup {
   position: fixed;
   bottom: 72px;
   left: 50%;
@@ -444,7 +438,7 @@
   to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
-.quick-contact-item {
+.m-contact-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -455,24 +449,24 @@
   min-width: 56px;
 }
 
-.quick-contact-item span { font-size: 0.65rem; color: var(--text-muted); }
+.m-contact-item span { font-size: 0.65rem; color: var(--text-muted); }
 
-.quick-contact-badge {
+.m-contact-badge {
   width: 44px;
   height: 44px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #fff;
   box-shadow: var(--shadow-md);
   transition: all 0.25s ease;
 }
 
-.quick-contact-item:hover .quick-contact-badge { transform: scale(1.1); }
+.m-contact-item:hover .m-contact-badge { transform: scale(1.1); }
 
-/* ===== Mobile bottom bar (travel-agency style) ===== */
-.mobile-help-bar {
+/* ===== Mobile bottom bar ===== */
+.mobile-bar {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -489,7 +483,7 @@
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
 }
 
-.mhb-btn {
+.mb-btn {
   flex: 1;
   display: flex;
   align-items: center;
@@ -506,19 +500,17 @@
   transition: var(--transition);
 }
 
-.mhb-btn:active { background: rgba(255, 255, 255, 0.05); }
+.mb-btn:active { background: rgba(255, 255, 255, 0.05); }
+.mb-btn svg { color: var(--accent-green); }
 
-.mhb-btn svg { color: var(--accent-green); }
-
-.mhb-divider {
+.mb-divider {
   width: 1px;
   height: 28px;
   background: var(--border);
 }
 
-/* ===== Responsive ===== */
 @media (max-width: 480px) {
-  .help-panel:not(.help-panel--mobile) {
+  .help-floating:not(.help-floating--mobile) {
     width: calc(100vw - 40px);
     right: 0;
     max-height: 70vh;
