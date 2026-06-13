@@ -1,15 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { VeloCityProvider, useVeloCity } from './context/VeloCityContext';
 import { LanguageProvider } from './context/TranslationContext';
-import { ToastProvider } from './components/Toast';
+import { ToastProvider, useToast } from './components/Toast';
 import { PageTransition } from './components/PageTransition';
 import BackToTop from './components/BackToTop';
 import CookieConsent from './components/CookieConsent';
 import FloatingContact from './components/FloatingContact';
 import LoadingScreen from './components/LoadingScreen';
+import CommandPalette from './components/CommandPalette';
+import NotificationModal from './components/NotificationModal';
+import SettingsModal from './components/SettingsModal';
 import Navbar from './components/Navbar';
 import Landing from './pages/Landing';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { X, Home, Activity, Users, MapPin, Car, Fuel, Shield, Settings } from 'lucide-react';
 import DriverPortal from './pages/DriverPortal';
 import FleetManager from './pages/FleetManager';
 import StationManagerDashboard from './pages/StationManagerDashboard';
@@ -42,10 +46,13 @@ const INFO_PAGES = {
 
 function VeloCityApp() {
   const { state, dispatch, logout, setPage } = useVeloCity();
+  const { toast } = useToast();
   const [scrollPct, setScrollPct] = useState(0);
   const [theme, setTheme] = useState(() => localStorage.getItem('velocity_theme') || 'dark');
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notifModalOpen, setNotifModalOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -56,6 +63,26 @@ function VeloCityApp() {
     const timer = setTimeout(() => setLoading(false), 1200);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (state.isAuthenticated && state.notifications.length === 0) {
+      const seed = [
+        { id: 'n1', text: 'New station registration pending approval', time: '5m ago', type: 'info', read: false },
+        { id: 'n2', text: 'Fuel level alert: Station #042 below 15%', time: '15m ago', type: 'warning', read: false },
+        { id: 'n3', text: 'Settlement report for March generated', time: '2h ago', type: 'success', read: true },
+        { id: 'n4', text: 'Driver #8712 flagged for unusual activity', time: '4h ago', type: 'warning', read: false },
+      ];
+      dispatch({ type: 'SET_NOTIFICATIONS', payload: seed });
+    }
+  }, [state.isAuthenticated, state.notifications.length, dispatch]);
+
+  const handleCmdAction = useCallback((action, payload) => {
+    switch (action) {
+      case 'help': toast.info('Help & Support is available'); break;
+      case 'portal': setPage(payload); break;
+      default: break;
+    }
+  }, [setPage, toast]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -115,6 +142,31 @@ function VeloCityApp() {
     setTheme(t => t === 'dark' ? 'light' : 'dark');
   };
 
+  const notifications = state.notifications || [];
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleMarkRead = (id) => {
+    dispatch({ type: 'SET_NOTIFICATIONS', payload: notifications.map(n => n.id === id ? { ...n, read: true } : n) });
+  };
+
+  const handleMarkAllRead = () => {
+    dispatch({ type: 'SET_NOTIFICATIONS', payload: notifications.map(n => ({ ...n, read: true })) });
+  };
+
+  const handleDismiss = (id) => {
+    dispatch({ type: 'SET_NOTIFICATIONS', payload: notifications.filter(n => n.id !== id) });
+  };
+
+  const handleClearAll = () => {
+    dispatch({ type: 'SET_NOTIFICATIONS', payload: [] });
+  };
+
+  const handleCurrencyChange = (currency) => {
+    dispatch({ type: 'SET_CURRENCY', payload: currency });
+    localStorage.setItem('velocity_currency', currency);
+    toast.success(`Currency changed to ${currency}`);
+  };
+
   return (
     <div className="app">
       {state.isAuthenticated && (
@@ -127,6 +179,10 @@ function VeloCityApp() {
           onThemeToggle={toggleTheme}
           sidebarOpen={sidebarOpen}
           onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
+          notifications={notifications}
+          unreadCount={unreadCount}
+          onViewAllNotifications={() => setNotifModalOpen(true)}
+          onOpenSettings={() => setSettingsModalOpen(true)}
         />
       )}
       <AnimatePresence>
@@ -187,6 +243,34 @@ function VeloCityApp() {
       <BackToTop />
       <FloatingContact />
       <CookieConsent />
+
+      <CommandPalette
+        user={state.user}
+        onAction={handleCmdAction}
+        theme={theme}
+        onThemeToggle={toggleTheme}
+        onLogout={logout}
+      />
+
+      <NotificationModal
+        open={notifModalOpen}
+        onClose={() => setNotifModalOpen(false)}
+        notifications={notifications}
+        onMarkRead={handleMarkRead}
+        onMarkAllRead={handleMarkAllRead}
+        onDismiss={handleDismiss}
+        onClearAll={handleClearAll}
+      />
+
+      <SettingsModal
+        open={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        user={state.user}
+        theme={theme}
+        onThemeToggle={toggleTheme}
+        currency={state.currency}
+        onCurrencyChange={handleCurrencyChange}
+      />
     </div>
   );
 }

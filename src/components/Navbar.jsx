@@ -6,7 +6,7 @@ import './Navbar.css';
 
 import ThemeToggle from './ThemeToggle';
 
-export default function Navbar({ currentPortal, onPortalChange, user, onLogout, theme, onThemeToggle, onSidebarToggle, sidebarOpen }) {
+export default function Navbar({ currentPortal, onPortalChange, user, onLogout, theme, onThemeToggle, onSidebarToggle, sidebarOpen, notifications, unreadCount, onViewAllNotifications, onOpenSettings }) {
   const { state } = useVeloCity();
   const role = user?.role;
   const [isScrolled, setIsScrolled] = useState(false);
@@ -125,14 +125,7 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
     driver: 'Driver'
   };
 
-  const notifications = [
-    { id: 1, text: 'New station registration pending approval', time: '5m ago', unread: true },
-    { id: 2, text: 'Fuel level alert: Station #042 below 15%', time: '15m ago', unread: true },
-    { id: 3, text: 'Settlement report for March generated', time: '2h ago', unread: false },
-    { id: 4, text: 'Driver #8712 flagged for unusual activity', time: '4h ago', unread: false },
-  ];
-
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const notifList = notifications || [];
   const initials = user?.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'U';
 
   return (
@@ -258,18 +251,23 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
                       )}
                     </div>
                     <div className="notif-list">
-                      {notifications.map((n) => (
-                        <div key={n.id} className={`notif-item ${n.unread ? 'unread' : ''}`}>
-                          <div className={`notif-dot ${n.unread ? 'active' : ''}`} />
+                      {notifList.slice(0, 4).map((n) => (
+                        <div key={n.id} className={`notif-item ${!n.read ? 'unread' : ''}`}>
+                          <div className={`notif-dot ${!n.read ? 'active' : ''}`} />
                           <div className="notif-content">
                             <p className="notif-text">{n.text}</p>
                             <span className="notif-time">{n.time}</span>
                           </div>
                         </div>
                       ))}
+                      {notifList.length === 0 && (
+                        <div className="notif-item" style={{ justifyContent: 'center', color: 'var(--text-muted)', padding: '16px' }}>
+                          No notifications
+                        </div>
+                      )}
                     </div>
                     <div className="notif-footer">
-                      <button className="notif-view-all">View All</button>
+                      <button className="notif-view-all" onClick={onViewAllNotifications}>View All</button>
                     </div>
                   </motion.div>
                 )}
@@ -309,7 +307,7 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
                     <span className="dropdown-role">{roleLabels[role] || role}</span>
                   </div>
                   <div className="dropdown-divider" />
-                  <button className="dropdown-item" onClick={() => { setUserMenuOpen(false); onPortalChange('settings'); }}>
+                  <button className="dropdown-item" onClick={() => { setUserMenuOpen(false); onOpenSettings(); }}>
                     <Settings size={16} />
                     Settings
                   </button>
@@ -397,7 +395,7 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
               </div>
 
               <div className="mobile-menu-actions">
-                <button className="mobile-action-btn" onClick={() => { setMobileMenuOpen(false); onPortalChange('settings'); }}>
+                <button className="mobile-action-btn" onClick={() => { setMobileMenuOpen(false); onOpenSettings(); }}>
                   <Settings size={18} />
                   Settings
                 </button>
