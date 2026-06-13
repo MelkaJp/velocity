@@ -1,4 +1,5 @@
 import { VeloCityProvider, useVeloCity } from './context/VeloCityContext';
+import { LanguageProvider } from './context/TranslationContext';
 import Navbar from './components/Navbar';
 import Landing from './pages/Landing';
 import DriverPortal from './pages/DriverPortal';
@@ -94,7 +95,9 @@ function VeloCityApp() {
 function App() {
   return (
     <VeloCityProvider>
-      <VeloCityApp />
+      <LanguageProvider>
+        <VeloCityApp />
+      </LanguageProvider>
     </VeloCityProvider>
   );
 }
