@@ -25,7 +25,7 @@ export default function Pricing() {
       period: 'ETB / Yearly',
       description: 'For individual drivers',
       icon: Fuel,
-      color: '#06D6A0',
+      color: 'var(--accent-green)',
       features: [
         { name: 'Vehicle registration', included: true },
         { name: 'QR code fuel card', included: true },
@@ -42,7 +42,7 @@ export default function Pricing() {
       period: 'ETB / Yearly',
       description: 'For fleet businesses',
       icon: Users,
-      color: '#3A86FF',
+      color: 'var(--accent-blue)',
       popular: true,
       features: [
         { name: 'Vehicle registration', included: true },
@@ -60,7 +60,7 @@ export default function Pricing() {
       period: 'ETB / Yearly',
       description: 'For fuel stations',
       icon: MapPin,
-      color: '#FF6B35',
+      color: 'var(--accent-green)',
       features: [
         { name: 'QR code scanning', included: true },
         { name: 'Transaction verification', included: true },
@@ -77,7 +77,7 @@ export default function Pricing() {
       period: 'contact us',
       description: 'For municipalities',
       icon: Building2,
-      color: '#8338EC',
+      color: 'var(--accent-blue)',
       features: [
         { name: 'QR code scanning', included: true },
         { name: 'Transaction verification', included: true },
