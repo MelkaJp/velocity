@@ -114,11 +114,11 @@
 }
 
 .help-floating {
-  position: absolute;
-  bottom: 70px;
-  right: 0;
+  position: fixed;
+  bottom: 160px;
+  right: 24px;
   width: 380px;
-  max-height: 560px;
+  max-height: calc(100vh - 240px);
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -127,6 +127,7 @@
   flex-direction: column;
   overflow: hidden;
   animation: help-in 0.25s ease;
+  z-index: 1101;
 }
 
 .help-floating--mobile {
