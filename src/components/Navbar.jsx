@@ -1,20 +1,15 @@
 import { useVeloCity } from '../context/VeloCityContext';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Fuel, MapPin, Users, Building2, Home, LogOut, User, Activity, Car, Shield, Menu, X, ChevronDown, Sun, Moon } from 'lucide-react';
-import { useTranslation } from '../context/TranslationContext';
-import { useTheme } from '../context/ThemeContext';
+import { Fuel, MapPin, Users, Building2, Home, LogOut, User, Activity, Car, Shield, Menu, X, ChevronDown } from 'lucide-react';
 import './Navbar.css';
 
 export default function Navbar({ currentPortal, onPortalChange, user, onLogout }) {
   const { state } = useVeloCity();
-  const { t, language, changeLanguage, languages } = useTranslation();
-  const { theme, toggleTheme } = useTheme();
   const role = user?.role;
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showLangMenu, setShowLangMenu] = useState(false);
-  
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -136,47 +131,6 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout }
               <span className="user-role">{roleLabels[role] || role}</span>
             </div>
           </motion.div>
-          
-          <motion.button 
-            className="theme-toggle" 
-            onClick={toggleTheme}
-            title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-          </motion.button>
-          
-          <motion.div className="lang-selector">
-            <motion.button 
-              className="lang-btn"
-              onClick={() => setShowLangMenu(!showLangMenu)}
-              whileHover={{ scale: 1.1 }}
-            >
-              <span className="lang-label">{language.toUpperCase()}</span>
-            </motion.button>
-            <AnimatePresence>
-              {showLangMenu && (
-                <motion.div 
-                  className="lang-menu"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                >
-                  {languages.map(lang => (
-                    <button 
-                      key={lang.code}
-                      className={`lang-option ${language === lang.code ? 'active' : ''}`}
-                      onClick={() => { changeLanguage(lang.code); setShowLangMenu(false); }}
-                    >
-                      {lang.native}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-          
           <motion.button 
             className="logout-btn" 
             onClick={onLogout} 

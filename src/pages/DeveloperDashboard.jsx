@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
 import { motion } from 'framer-motion';
@@ -29,50 +29,42 @@ export default function DeveloperDashboard() {
   const { state } = useVeloCity();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
-  const [stats, setStats] = useState([
-    { label: 'Total Users', value: '32,458', change: '+12.5%', color: '#06D6A0', icon: Users },
-    { label: 'Municipalities', value: '14', change: '+2', color: '#118AB2', icon: Building2 },
-    { label: 'Fuel Stations', value: '156', change: '+8', color: '#FF6B35', icon: MapPin },
-    { label: 'Registered Vehicles', value: '28,947', change: '+892', color: '#EF476F', icon: Car },
-    { label: 'Total Revenue', value: '$2.4M', change: '+18.2%', color: '#FFD166', icon: Wallet },
-    { label: 'Transactions', value: '156,234', change: '+2,342', color: '#073B4C', icon: Activity },
-  ]);
-  const [municipalities, setMunicipalities] = useState([]);
-  const [systemHealth, setSystemHealth] = useState([]);
-  const [recentTransactions, setRecentTransactions] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const headers = { 'Content-Type': 'application/json' };
-        const token = state.token;
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-        
-        const healthRes = await fetch('http://localhost:8000/', { headers });
-        const healthData = await healthRes.json();
-        if (healthData) {
-          setSystemHealth([
-            { name: 'API Server', status: 'healthy', uptime: '99.9%', latency: '12ms' },
-            { name: 'Database', status: 'healthy', uptime: '99.8%', latency: '5ms' },
-            { name: 'Auth Service', status: 'healthy', uptime: '99.9%', latency: '8ms' },
-          ]);
-        }
-        
-        const txRes = await fetch('http://localhost:8000/api/transactions', { headers });
-        const txData = await txRes.json();
-        if (Array.isArray(txData)) {
-          setRecentTransactions(txData.slice(0, 10));
-        }
-      } catch (error) {
-        console.log('Using demo mode - backend unavailable');
-      }
-    };
-    fetchData();
-  }, [state.token]);
+  const stats = [
+    { icon: Users, label: 'Total Users', value: '12,847', change: '+234', color: '#3A86FF' },
+    { icon: Building2, label: 'Municipalities', value: '42', change: '+3', color: '#06D6A0' },
+    { icon: MapPin, label: 'Fuel Stations', value: '156', change: '+12', color: '#FF6B35' },
+    { icon: Truck, label: 'Vehicles', value: '28,947', change: '+1,234', color: '#EF476F' },
+    { icon: Wallet, label: 'Revenue (MTD)', value: '$9.4M', change: '+12%', color: '#2EC4B6' },
+    { icon: Activity, label: 'Transactions', value: '156K', change: '+8%', color: '#8D99AE' },
+  ];
+
+  const municipalities = [
+    { id: 1, name: 'City of Kigali', stations: 45, vehicles: 8450, revenue: 2450000, status: 'active' },
+    { id: 2, name: 'Rubavu District', stations: 23, vehicles: 4200, revenue: 1280000, status: 'active' },
+    { id: 3, name: 'Muhanga District', stations: 18, vehicles: 3100, revenue: 980000, status: 'active' },
+    { id: 4, name: 'Nyagatare District', stations: 15, vehicles: 2800, revenue: 890000, status: 'pending' },
+    { id: 5, name: ' Rusizi District', stations: 12, vehicles: 2100, revenue: 670000, status: 'active' },
+  ];
+
+  const systemHealth = [
+    { name: 'API Gateway', status: 'healthy', uptime: '99.98%', latency: '45ms' },
+    { name: 'Database', status: 'healthy', uptime: '99.99%', latency: '12ms' },
+    { name: 'Auth Service', status: 'healthy', uptime: '99.95%', latency: '23ms' },
+    { name: 'QR Generator', status: 'warning', uptime: '98.5%', latency: '120ms' },
+    { name: 'Payment Gateway', status: 'healthy', uptime: '99.9%', latency: '67ms' },
+  ];
+
+  const recentTransactions = [
+    { id: 'TX001', vehicle: 'RAB 123D', station: 'Shell Kigali', liters: 45, amount: 2250, status: 'verified', time: '2 min ago' },
+    { id: 'TX002', vehicle: 'RAB 456E', station: 'Total Gas', liters: 120, amount: 6000, status: 'verified', time: '5 min ago' },
+    { id: 'TX003', vehicle: 'RAB 789F', station: 'BP Station', liters: 35, amount: 1750, status: 'pending', time: '8 min ago' },
+    { id: 'TX004', vehicle: 'RAB 321G', station: 'Shell Kigali', liters: 90, amount: 4500, status: 'verified', time: '12 min ago' },
+    { id: 'TX005', vehicle: 'RAB 654H', station: 'Total Gas', liters: 60, amount: 3000, status: 'flagged', time: '15 min ago' },
+  ];
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Activity },
-    { id: 'admins', label: 'Admin Management', icon: Shield },
     { id: 'municipalities', label: 'Municipalities', icon: Building2 },
     { id: 'stations', label: 'All Stations', icon: MapPin },
     { id: 'transactions', label: 'Transactions', icon: Wallet },
@@ -198,135 +190,8 @@ export default function DeveloperDashboard() {
               </div>
             </div>
           </motion.div>
-)}
-        
-        {activeTab === 'admins' && (
-          <motion.div 
-            className="admins-view"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="panel">
-              <div className="panel-header">
-                <h3>Admin Accounts</h3>
-                <button className="btn-primary">Add New Admin</button>
-              </div>
-              <div className="panel-content">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Admin ID</th>
-                      <th>Name</th>
-                      <th>Role</th>
-                      <th>Municipality</th>
-                      <th>Email</th>
-                      <th>Status</th>
-                      <th>Created</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>ADM001</td>
-                      <td>Alemayehu Tadesse</td>
-                      <td><span className="role-badge developer">Developer Admin</span></td>
-                      <td>System Wide</td>
-                      <td>alemayehu@velocity.et</td>
-                      <td><span className="status-badge active">Active</span></td>
-                      <td>2024-01-15</td>
-                      <td><button className="btn-icon">Edit</button></td>
-                    </tr>
-                    <tr>
-                      <td>ADM002</td>
-                      <td>Tadesse Bekele</td>
-                      <td><span className="role-badge municipality">Municipality Admin</span></td>
-                      <td>Addis Ababa</td>
-                      <td>tadesse@addisababa.et</td>
-                      <td><span className="status-badge active">Active</span></td>
-                      <td>2024-02-20</td>
-                      <td><button className="btn-icon">Edit</button></td>
-                    </tr>
-                    <tr>
-                      <td>ADM003</td>
-                      <td>Yohannes Demeke</td>
-                      <td><span className="role-badge municipality">Municipality Admin</span></td>
-                      <td>Dire Dawa</td>
-                      <td>yohannes@direet.et</td>
-                      <td><span className="status-badge active">Active</span></td>
-                      <td>2024-03-10</td>
-                      <td><button className="btn-icon">Edit</button></td>
-                    </tr>
-                    <tr>
-                      <td>ADM004</td>
-                      <td>Meron Tesfaye</td>
-                      <td><span className="role-badge station">Station Manager</span></td>
-                      <td>Bole Station</td>
-                      <td>meron@bole.et</td>
-                      <td><span className="status-badge active">Active</span></td>
-                      <td>2024-04-05</td>
-                      <td><button className="btn-icon">Edit</button></td>
-                    </tr>
-                    <tr>
-                      <td>ADM005</td>
-                      <td>Solomon Kebede</td>
-                      <td><span className="role-badge station">Station Manager</span></td>
-                      <td>Mexico Station</td>
-                      <td>solomon@mexico.et</td>
-                      <td><span className="status-badge suspended">Suspended</span></td>
-                      <td>2024-04-12</td>
-                      <td><button className="btn-icon">Edit</button></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            
-            <div className="panel">
-              <div className="panel-header">
-                <h3>Pending Admin Approvals</h3>
-              </div>
-              <div className="panel-content">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Request ID</th>
-                      <th>Name</th>
-                      <th>Role</th>
-                      <th>Requested By</th>
-                      <th>Date</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>REQ001</td>
-                      <td>Abebe Negash</td>
-                      <td><span className="role-badge station">Station Manager</span></td>
-                      <td>ADM002</td>
-                      <td>2024-05-10</td>
-                      <td>
-                        <button className="btn-icon approve"><CheckCircle size={16} /></button>
-                        <button className="btn-icon reject"><XCircle size={16} /></button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>REQ002</td>
-                      <td>Fatuma Ahmed</td>
-                      <td><span className="role-badge municipality">Municipality Admin</span></td>
-                      <td>ADM001</td>
-                      <td>2024-05-11</td>
-                      <td>
-                        <button className="btn-icon approve"><CheckCircle size={16} /></button>
-                        <button className="btn-icon reject"><XCircle size={16} /></button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </motion.div>
         )}
-        
+
         {activeTab === 'municipalities' && (
           <motion.div 
             className="municipalities-view"

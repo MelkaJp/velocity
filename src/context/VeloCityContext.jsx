@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { sampleVehicles, sampleTransactions, stations, dailyStats } from '../data/sampleData';
 
 // Supabase configuration - set these in your .env file
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -18,131 +19,34 @@ const CURRENCY_RATES = {
 };
 
 const ACCESS_LEVELS = {
-  SUPER_ADMIN: { 
-    level: 100, 
-    name: 'Super Admin', 
-    canReview: true, 
-    canBan: true, 
-    canAudit: true, 
-    canManageAll: true,
-    canManageAllAdmins: true,
-    canApproveAdminRegistrations: true,
-    canAddMunicipalities: true,
-    canRevokeAnyAccount: true,
-    canViewAllActivities: true,
-    canManageStations: true,
-    canApproveDriverSignups: true,
-  },
-  DEVELOPER_ADMIN: { 
-    level: 90, 
-    name: 'Developer Admin', 
-    canReview: true, 
-    canBan: true, 
-    canAudit: true, 
-    canManageAll: true,
-    canManageAllAdmins: true,
-    canApproveAdminRegistrations: true,
-    canAddMunicipalities: true,
-    canRevokeAnyAccount: true,
-    canViewAllActivities: true,
-    canManageStations: true,
-    canApproveDriverSignups: true,
-  },
-  MUNICIPALITY_ADMIN: { 
-    level: 80, 
-    name: 'Municipality Admin', 
-    canReview: true, 
-    canBan: true, 
-    canAudit: true, 
-    canManageStations: true,
-    canAddStationAdmins: true,
-    canRevokeStationAdmin: true,
-    canApproveDriverSignups: true,
-    canViewStationActivities: true,
-    canViewDriverSignups: true,
-  },
-  STATION_MANAGER: { 
-    level: 60, 
-    name: 'Station Manager', 
-    canReview: false, 
-    canBan: false, 
-    canAudit: false, 
-    canManageStation: true,
-    canAddWorkers: true,
-    canViewDrivers: true,
-    canVerifyDrivers: true,
-    canDispenseFuel: true,
-  },
-  STATION_WORKER: { 
-    level: 40, 
-    name: 'Station Worker', 
-    canReview: false, 
-    canBan: false, 
-    canAudit: false, 
-    canDispense: true,
-    canViewDrivers: true,
-    canScanDriverQR: true,
-    canVerifyDriverBeforePump: true,
-  },
-  FLEET_OWNER: { 
-    level: 30, 
-    name: 'Fleet Owner', 
-    canReview: false, 
-    canBan: false, 
-    canAudit: false, 
-    canManageFleet: true,
-  },
-  DRIVER: { 
-    level: 10, 
-    name: 'Driver', 
-    canReview: false, 
-    canBan: false, 
-    canAudit: false, 
-    canBookFuel: true,
-  },
+  SUPER_ADMIN: { level: 100, name: 'Super Admin', canReview: true, canBan: true, canAudit: true, canManageAll: true },
+  DEVELOPER_ADMIN: { level: 90, name: 'Developer Admin', canReview: true, canBan: true, canAudit: true, canManageAll: true },
+  MUNICIPALITY_ADMIN: { level: 80, name: 'Municipality Admin', canReview: true, canBan: true, canAudit: true, canManageStations: true },
+  STATION_MANAGER: { level: 60, name: 'Station Manager', canReview: false, canBan: false, canAudit: false, canManageStation: true },
+  STATION_WORKER: { level: 40, name: 'Station Worker', canReview: false, canBan: false, canAudit: false, canDispense: true },
+  FLEET_OWNER: { level: 30, name: 'Fleet Owner', canReview: false, canBan: false, canAudit: false, canManageFleet: true },
+  DRIVER: { level: 10, name: 'Driver', canReview: false, canBan: false, canAudit: false, canBookFuel: true },
 };
 
 const PERMISSIONS = {
   VIEW_ALL_TRANSACTIONS: 'VIEW_ALL_TRANSACTIONS',
   MANAGE_STATIONS: 'MANAGE_STATIONS',
   MANAGE_USERS: 'MANAGE_USERS',
-  MANAGE_ALL_ADMINS: 'MANAGE_ALL_ADMINS',
   VIEW_AUDIT_LOGS: 'VIEW_AUDIT_LOGS',
   APPROVE_REVIEW: 'APPROVE_REVIEW',
   BAN_ACCOUNTS: 'BAN_ACCOUNTS',
   MODIFY_PRICING: 'MODIFY_PRICING',
   VIEW_FINANCIALS: 'VIEW_FINANCIALS',
-  ADD_MUNICIPALITIES: 'ADD_MUNICIPALITIES',
-  ADD_STATION_ADMINS: 'ADD_STATION_ADMINS',
-  ADD_STATION_WORKERS: 'ADD_STATION_WORKERS',
-  APPROVE_DRIVER_SIGNUPS: 'APPROVE_DRIVER_SIGNUPS',
-  VIEW_ALL_ACTIVITIES: 'VIEW_ALL_ACTIVITIES',
-  VIEW_STATION_ACTIVITIES: 'VIEW_STATION_ACTIVITIES',
-  VERIFY_DRIVERS: 'VERIFY_DRIVERS',
-  SCAN_DRIVER_QR: 'SCAN_DRIVER_QR',
-  DISPENSE_FUEL: 'DISPENSE_FUEL',
-  GENERATE_QR_CODE: 'GENERATE_QR_CODE',
 };
 
 const REQUIRED_CLEARANCE = {
   [PERMISSIONS.VIEW_ALL_TRANSACTIONS]: [ACCESS_LEVELS.MUNICIPALITY_ADMIN.level, ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
   [PERMISSIONS.MANAGE_STATIONS]: [ACCESS_LEVELS.MUNICIPALITY_ADMIN.level, ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
   [PERMISSIONS.MANAGE_USERS]: [ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
-  [PERMISSIONS.MANAGE_ALL_ADMINS]: [ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
   [PERMISSIONS.VIEW_AUDIT_LOGS]: [ACCESS_LEVELS.MUNICIPALITY_ADMIN.level, ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
   [PERMISSIONS.APPROVE_REVIEW]: [ACCESS_LEVELS.MUNICIPALITY_ADMIN.level, ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
   [PERMISSIONS.BAN_ACCOUNTS]: [ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
   [PERMISSIONS.VIEW_FINANCIALS]: [ACCESS_LEVELS.MUNICIPALITY_ADMIN.level, ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
-  [PERMISSIONS.ADD_MUNICIPALITIES]: [ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
-  [PERMISSIONS.ADD_STATION_ADMINS]: [ACCESS_LEVELS.MUNICIPALITY_ADMIN.level, ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
-  [PERMISSIONS.ADD_STATION_WORKERS]: [ACCESS_LEVELS.STATION_MANAGER.level, ACCESS_LEVELS.MUNICIPALITY_ADMIN.level, ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
-  [PERMISSIONS.APPROVE_DRIVER_SIGNUPS]: [ACCESS_LEVELS.MUNICIPALITY_ADMIN.level, ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
-  [PERMISSIONS.VIEW_ALL_ACTIVITIES]: [ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
-  [PERMISSIONS.VIEW_STATION_ACTIVITIES]: [ACCESS_LEVELS.MUNICIPALITY_ADMIN.level, ACCESS_LEVELS.STATION_MANAGER.level, ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
-  [PERMISSIONS.VERIFY_DRIVERS]: [ACCESS_LEVELS.STATION_MANAGER.level, ACCESS_LEVELS.STATION_WORKER.level],
-  [PERMISSIONS.SCAN_DRIVER_QR]: [ACCESS_LEVELS.STATION_WORKER.level],
-  [PERMISSIONS.DISPENSE_FUEL]: [ACCESS_LEVELS.STATION_WORKER.level, ACCESS_LEVELS.STATION_MANAGER.level],
-  [PERMISSIONS.GENERATE_QR_CODE]: [ACCESS_LEVELS.STATION_MANAGER.level, ACCESS_LEVELS.STATION_WORKER.level, ACCESS_LEVELS.DEVELOPER_ADMIN.level, ACCESS_LEVELS.SUPER_ADMIN.level],
 };
 
 const FUEL_AVAILABILITY = {
@@ -185,9 +89,9 @@ const initialState = {
   vehicles: [],
   transactions: [],
   stations: [],
-  stats: {},
+  stats: dailyStats,
   currentPortal: 'landing',
-  apiStatus: 'offline',
+  apiStatus: 'demo',
   driverLocks: {},
   currency: 'ETB',
   appointments: [],
@@ -297,24 +201,34 @@ export function VeloCityProvider({ children }) {
         dispatch({ type: 'LOGIN', payload: { user: JSON.parse(savedUser), token: savedToken } });
       }
       
-      try {
-        const headers = { 'Content-Type': 'application/json' };
-        if (savedToken) headers['Authorization'] = `Bearer ${savedToken}`;
-        
-        const statsRes = await fetch('http://localhost:8000/api/public/stats', { headers }).catch(() => null);
-        
-        const statsData = statsRes ? await statsRes.json() : null;
-        if (statsData && statsData.total_users !== undefined) {
-          dispatch({ type: 'SET_STATS', payload: statsData });
-          dispatch({ type: 'SET_API_STATUS', payload: 'online' });
-        } else {
-          dispatch({ type: 'SET_API_STATUS', payload: 'offline' });
+      // Try to load from Supabase if configured
+      if (supabase) {
+        try {
+          const { data: vehicles } = await supabase.from('vehicles').select('*');
+          if (vehicles && vehicles.length > 0) {
+            dispatch({ type: 'SET_VEHICLES', payload: vehicles });
+          }
+          
+          const { data: trans } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
+          if (trans) {
+            dispatch({ type: 'SET_TRANSACTIONS', payload: trans });
+          }
+          
+          const { data: stats } = await supabase.from('stations').select('*');
+          if (stats) {
+            dispatch({ type: 'SET_STATIONS', payload: stats });
+          }
+        } catch (e) {
+          console.log('Using demo data (Supabase not connected)');
         }
-      } catch (e) {
-        console.log('Cannot connect to backend server');
-        dispatch({ type: 'SET_API_STATUS', payload: 'offline' });
+      } else {
+        // Use demo data
+        dispatch({ type: 'SET_VEHICLES', payload: sampleVehicles });
+        dispatch({ type: 'SET_TRANSACTIONS', payload: sampleTransactions });
+        dispatch({ type: 'SET_STATIONS', payload: stations });
       }
       
+      dispatch({ type: 'SET_STATS', payload: dailyStats });
       dispatch({ type: 'SET_CURRENCY', payload: savedCurrency });
       setLoading(false);
     };
@@ -373,11 +287,39 @@ export function VeloCityProvider({ children }) {
   };
 
   const login = async (username, password) => {
+    const demoAccounts = {
+      'developer': { id: 'admin_dev', username: 'developer', name: 'System Developer', role: 'developer_admin', email: 'developer@velocity.com', accessLevel: ACCESS_LEVELS.DEVELOPER_ADMIN.level },
+      'municipality': { id: 'admin_muni', username: 'municipality', name: 'Municipality Admin', role: 'municipality_admin', email: 'municipality@velocity.com', accessLevel: ACCESS_LEVELS.MUNICIPALITY_ADMIN.level },
+      'station1_mgr': { id: 'SM001', username: 'station1_mgr', name: 'Station 1 Manager', role: 'station_manager', email: 'station1@velocity.com', accessLevel: ACCESS_LEVELS.STATION_MANAGER.level },
+      'station1_worker': { id: 'SW001', username: 'station1_worker', name: 'Station 1 Worker', role: 'station_worker', email: 'worker1@velocity.com', accessLevel: ACCESS_LEVELS.STATION_WORKER.level },
+      'fleet_owner1': { id: 'FO001', username: 'fleet_owner1', name: 'Fleet Owner One', role: 'fleet_owner', email: 'fleet1@velocity.com', accessLevel: ACCESS_LEVELS.FLEET_OWNER.level },
+      'driver1': { id: 'DR001', username: 'driver1', name: 'Driver One', role: 'driver', email: 'driver1@velocity.com', accessLevel: ACCESS_LEVELS.DRIVER.level },
+      'superadmin': { id: 'admin_super', username: 'superadmin', name: 'Super Admin', role: 'super_admin', email: 'super@velocity.com', accessLevel: ACCESS_LEVELS.SUPER_ADMIN.level },
+    };
+
+    const demoPasswords = {
+      'developer': 'dev123',
+      'municipality': 'muni123',
+      'station1_mgr': 'pass123',
+      'station1_worker': 'pass123',
+      'fleet_owner1': 'pass123',
+      'driver1': 'pass123',
+      'superadmin': 'super123',
+    };
+
+    if (demoAccounts[username] && demoPasswords[username] === password) {
+      const token = `demo_token_${Date.now()}`;
+      localStorage.setItem('velocity_user', JSON.stringify(demoAccounts[username]));
+      localStorage.setItem('velocity_token', token);
+      dispatch({ type: 'LOGIN', payload: { user: demoAccounts[username], token } });
+      return { success: true, user: demoAccounts[username] };
+    }
+
     try {
       const response = await fetch('http://localhost:8000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username, password: password }),
+        body: JSON.stringify({ username, password }),
       });
       const data = await response.json();
       
@@ -389,49 +331,28 @@ export function VeloCityProvider({ children }) {
       }
       return { success: false, error: data.detail || 'Invalid credentials' };
     } catch (error) {
-      return { success: false, error: 'Cannot connect to server. Please check your connection and try again.' };
+      return { success: false, error: 'Cannot connect to server. Use demo credentials.' };
     }
   };
 
   const register = async (userData) => {
+    const userId = `U${Date.now()}`;
+    const newUser = {
+      id: userId,
+      ...userData,
+      createdAt: new Date().toISOString(),
+    };
+    
     try {
       const response = await fetch('http://localhost:8000/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
       });
-      const data = await response.json();
-      return data;
+      return await response.json();
     } catch (error) {
-      return { success: false, error: 'Cannot connect to server. Please check your connection.' };
-    }
-  };
-
-  const forgotPassword = async (email) => {
-    try {
-      const response = await fetch('http://localhost:8000/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const data = await response.json();
-      return { success: data.success || true, message: data.message || 'Password reset email sent' };
-    } catch (error) {
-      return { success: true, message: 'If an account exists with this email, a reset link will be sent' };
-    }
-  };
-
-  const resetPassword = async (token, newPassword) => {
-    try {
-      const response = await fetch('http://localhost:8000/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, new_password: newPassword }),
-      });
-      const data = await response.json();
-      return { success: data.success, message: data.message || 'Password reset successful' };
-    } catch (error) {
-      return { success: false, error: 'Failed to reset password' };
+      localStorage.setItem(`velocity_user_${userId}`, JSON.stringify(newUser));
+      return { success: true, user: newUser };
     }
   };
 
@@ -441,118 +362,63 @@ export function VeloCityProvider({ children }) {
     dispatch({ type: 'LOGOUT' });
   };
 
-  const registerVehicle = async (vehicleData, ownerId, token = null) => {
-    try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      const response = await fetch('http://localhost:8000/api/vehicles/register', {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify({ 
-          type: vehicleData.type,
-          plate: vehicleData.plate,
-          tank_capacity: vehicleData.tank_capacity || vehicleData.tankCapacity,
-          owner_name: vehicleData.owner_name,
-          phone: vehicleData.phone,
-          qr_code: vehicleData.qr_code || '',
-          owner_user_id: ownerId || state.user?.id 
-        }),
-      });
-      const data = await response.json();
-      
-      if (data.success) {
-        dispatch({ type: 'ADD_VEHICLE', payload: data.vehicle });
-        return { success: true, vehicle: data.vehicle };
-      }
-      return { success: false, error: data.detail || 'Failed to register vehicle' };
-    } catch (error) {
-      return { success: false, error: 'Cannot connect to server. Please check your connection.' };
-    }
+  const registerVehicle = async (vehicleData, ownerId) => {
+    const vehicleId = `V${Date.now()}`;
+    const qrToken = `${vehicleData.plate.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    const newVehicle = {
+      id: vehicleId,
+      ...vehicleData,
+      owner_id: ownerId || state.user?.id,
+      qr_code: qrToken,
+      qr_data: generateQRCode({ ...vehicleData, id: vehicleId, owner_name: vehicleData.owner_name }),
+      driver_photo: vehicleData.photo || null,
+      status: 'active',
+      wallet: { balance: 5000, currency: state.currency },
+      last_filled: null,
+      fill_count: 0,
+      createdAt: new Date().toISOString(),
+    };
+    
+    dispatch({ type: 'ADD_VEHICLE', payload: newVehicle });
+    
+    const existingVehicles = JSON.parse(localStorage.getItem('velocity_vehicles') || '[]');
+    localStorage.setItem('velocity_vehicles', JSON.stringify([...existingVehicles, newVehicle]));
+    
+    return { success: true, vehicle: newVehicle };
   };
 
   const createTransaction = async (transactionData) => {
-    try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
-      
-      const response = await fetch('http://localhost:8000/api/transactions/create', {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(transactionData),
-      });
-      const data = await response.json();
-      
-      if (data.success) {
-        dispatch({ type: 'ADD_TRANSACTION', payload: data.transaction });
-        return { success: true, transaction: data.transaction };
-      }
-      return { success: false, error: data.detail || 'Failed to create transaction' };
-    } catch (error) {
-      return { success: false, error: 'Cannot connect to server. Please check your connection.' };
+    const fuelPrice = state.currency === 'USD' ? 50 : convertCurrency(50, 'USD', 'ETB');
+    const amount = transactionData.liters * fuelPrice;
+    
+    const pricePerLiter = state.currency === 'ETB' ? 50 : 0.32;
+    const revenueShare = calculateRevenueShare(transactionData.liters, pricePerLiter);
+    
+    const newTransaction = {
+      id: `TX${Date.now()}`,
+      ...transactionData,
+      amount,
+      currency: state.currency,
+      price_per_liter: fuelPrice,
+      timestamp: new Date().toISOString(),
+      status: 'verified',
+      driver_photo: transactionData.driver_photo || null,
+      pump_capture: transactionData.pump_capture || null,
+      pump_capture_verified: transactionData.pump_capture_verified || false,
+      station_id: transactionData.station_id,
+      worker_id: transactionData.worker_id,
+      revenue_distribution: revenueShare.distribution,
+      total_amount: revenueShare.baseAmount,
+    };
+    
+    dispatch({ type: 'ADD_TRANSACTION', payload: newTransaction });
+    
+    if (transactionData.vehicle_id && transactionData.driver_id) {
+      lockDriver(transactionData.driver_id);
     }
-  };
-
-  const lookupVehicle = async (qrCode) => {
-    if (!qrCode) return { success: false, error: 'No QR code provided' };
-    try {
-      const response = await fetch(`http://localhost:8000/api/vehicles/qr/${encodeURIComponent(qrCode)}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const vehicle = await response.json();
-      if (vehicle && vehicle.id) {
-        return { success: true, vehicle };
-      }
-      return { success: false, error: vehicle.detail || 'Vehicle not found' };
-    } catch (error) {
-      return { success: false, error: 'Cannot connect to server. Please check your connection.' };
-    }
-  };
-
-  const getRecentTransactions = async (stationId, limit = 10) => {
-    try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
-      
-      const url = `http://localhost:8000/api/transactions${stationId ? `?station_id=${stationId}` : ''}`;
-      const response = await fetch(url, { headers });
-      const data = await response.json();
-      
-      if (Array.isArray(data)) {
-        const sliced = data.slice(0, limit);
-        return { success: true, transactions: sliced };
-      }
-      return { success: false, error: 'Failed to fetch transactions' };
-    } catch (error) {
-      return { success: false, error: 'Cannot connect to server. Please check your connection.' };
-    }
-  };
-
-  const getStationStats = async (stationId) => {
-    try {
-      const response = await fetch('http://localhost:8000/api/stats', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const data = await response.json();
-      
-      if (data && typeof data === 'object') {
-        return {
-          success: true,
-          stats: [
-            { label: 'Today', value: data.total_transactions || 0 },
-            { label: 'Liters', value: 0 },
-            { label: 'Revenue', value: 0 },
-          ]
-        };
-      }
-      return { success: false, error: 'Failed to fetch stats' };
-    } catch (error) {
-      return { success: false, error: 'Cannot connect to server. Please check your connection.' };
-    }
+    
+    return { success: true, transaction: newTransaction };
   };
 
   const searchVehicles = (query, fleetOwnerId) => {
@@ -709,66 +575,6 @@ export function VeloCityProvider({ children }) {
     const required = REQUIRED_CLEARANCE[permission] || [];
     const userLevel = ACCESS_LEVELS[state.user.role?.toUpperCase()]?.level || 0;
     return required.includes(userLevel);
-  };
-
-  const canManageAllAdmins = () => {
-    if (!state.user) return false;
-    return hasPermission(PERMISSIONS.MANAGE_ALL_ADMINS);
-  };
-
-  const canAddMunicipalities = () => {
-    if (!state.user) return false;
-    return hasPermission(PERMISSIONS.ADD_MUNICIPALITIES);
-  };
-
-  const canAddStationAdmins = () => {
-    if (!state.user) return false;
-    return hasPermission(PERMISSIONS.ADD_STATION_ADMINS);
-  };
-
-  const canAddStationWorkers = () => {
-    if (!state.user) return false;
-    return hasPermission(PERMISSIONS.ADD_STATION_WORKERS);
-  };
-
-  const canApproveDriverSignups = () => {
-    if (!state.user) return false;
-    return hasPermission(PERMISSIONS.APPROVE_DRIVER_SIGNUPS);
-  };
-
-  const canViewAllActivities = () => {
-    if (!state.user) return false;
-    return hasPermission(PERMISSIONS.VIEW_ALL_ACTIVITIES);
-  };
-
-  const canViewStationActivities = () => {
-    if (!state.user) return false;
-    return hasPermission(PERMISSIONS.VIEW_STATION_ACTIVITIES);
-  };
-
-  const canRevokeAccount = (accountId) => {
-    if (!state.user) return false;
-    const targetUser = state.flaggedAccounts.find(a => a.id === accountId);
-    if (!targetUser) return hasPermission(PERMISSIONS.BAN_ACCOUNTS);
-    if (targetUser.role === 'SUPER_ADMIN' || targetUser.role === 'DEVELOPER_ADMIN') {
-      return ACCESS_LEVELS[state.user.role?.toUpperCase()]?.level === 100;
-    }
-    return hasPermission(PERMISSIONS.BAN_ACCOUNTS);
-  };
-
-  const canVerifyDriver = () => {
-    if (!state.user) return false;
-    return hasPermission(PERMISSIONS.VERIFY_DRIVERS);
-  };
-
-  const canScanDriverQR = () => {
-    if (!state.user) return false;
-    return hasPermission(PERMISSIONS.SCAN_DRIVER_QR);
-  };
-
-  const canDispenseFuel = () => {
-    if (!state.user) return false;
-    return hasPermission(PERMISSIONS.DISPENSE_FUEL);
   };
 
   const logAudit = (action, details) => {
@@ -934,14 +740,9 @@ const sendNotification = async (driverId, message) => {
       loading,
       login,
       register,
-      forgotPassword,
-      resetPassword,
       logout,
       registerVehicle,
       createTransaction,
-      lookupVehicle,
-      getRecentTransactions,
-      getStationStats,
       convertCurrency,
       formatCurrency,
       generateQRCode,
@@ -970,17 +771,6 @@ const sendNotification = async (driverId, message) => {
       calculateRevenueShare,
       calculateSubscriptionRevenue,
       hasPermission,
-      canManageAllAdmins,
-      canAddMunicipalities,
-      canAddStationAdmins,
-      canAddStationWorkers,
-      canApproveDriverSignups,
-      canViewAllActivities,
-      canViewStationActivities,
-      canRevokeAccount,
-      canVerifyDriver,
-      canScanDriverQR,
-      canDispenseFuel,
       ACCESS_LEVELS,
       PERMISSIONS,
       logAudit,

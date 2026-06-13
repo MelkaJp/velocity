@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
 import { motion } from 'framer-motion';
@@ -24,79 +24,46 @@ import {
 import './StationManagerDashboard.css';
 
 export default function StationManagerDashboard() {
-  const { state, setStationAvailability, getStationAvailability, FUEL_AVAILABILITY, recordFuelReceived, checkStationCapacity, getStationStats, getRecentTransactions } = useVeloCity();
+  const { state, setStationAvailability, getStationAvailability, FUEL_AVAILABILITY, recordFuelReceived, checkStationCapacity } = useVeloCity();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
   const [currentAvailability, setCurrentAvailability] = useState('FULL');
   const [fuelReceivedLiters, setFuelReceivedLiters] = useState('');
-  const [stats, setStats] = useState([
-    { label: 'Transactions', value: 0, icon: Activity, color: '#2EC4B6', change: '+0%' },
-    { label: 'Liters Dispensed', value: 0, icon: Fuel, color: '#3A86FF', change: '+0%' },
-    { label: 'Revenue', value: 0, icon: Wallet, color: '#FFD166', change: '+0%' },
-    { label: 'Active Workers', value: 0, icon: Users, color: '#06D6A0', change: '0' },
-  ]);
-  const [recentTransactions, setRecentTransactions] = useState([]);
-  const [workers, setWorkers] = useState([]);
-  const [inventory, setInventory] = useState([]);
   
-  const stationId = state.user?.station_id || 'ST001';
-  const stationFuelInfo = checkStationCapacity(stationId);
+  const stationFuelInfo = checkStationCapacity('ST001');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const token = state.token;
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      
-      const sid = state.user?.station_id;
-      if (sid) {
-        const statsResult = await getStationStats(sid);
-        if (statsResult.success) {
-          setStats(statsResult.stats);
-        }
-        
-        const txResult = await getRecentTransactions(sid, 10);
-        if (txResult.success) {
-          setRecentTransactions(txResult.transactions);
-        }
-        
-        try {
-          const stationRes = await fetch(`http://localhost:8000/api/stations/${sid}`, { headers });
-          const stationData = await stationRes.json();
-          if (stationData) {
-            setWorkers(stationData.workers || []);
-            if (stationData.inventory) {
-              const inv = stationData.inventory;
-              const defaultInv = [
-                { type: 'Unleaded', capacity: inv, used: inv * 0.4, color: '#2EC4B6' },
-              ];
-              setInventory(Array.isArray(inv) ? inv : defaultInv);
-            }
-          }
-        } catch (e) {
-          console.log('Backend unavailable, using demo data');
-          setWorkers([
-            { id: 'W1', name: 'John Worker', shift: 'Morning', transactions: 42, status: 'active' },
-            { id: 'W2', name: 'Jane Helper', shift: 'Evening', transactions: 38, status: 'active' },
-          ]);
-          setInventory([
-            { type: 'Unleaded', capacity: 15000, used: 6200, color: '#2EC4B6' },
-            { type: 'Diesel', capacity: 12000, used: 4800, color: '#3A86FF' },
-          ]);
-        }
-      }
-    };
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.user?.station_id, state.token]);
-  
-  const station = state.stations.find(s => s.id === stationId) || { name: 'Your Station', id: stationId };
+  const stats = [
+    { icon: Car, label: 'Total Transactions', value: '1,234', change: '+12%' },
+    { icon: Fuel, label: 'Fuel Dispensed', value: '45,600L', change: '+8%' },
+    { icon: Wallet, label: 'Revenue (Today)', value: 'FRW 2.4M', change: '+15%' },
+    { icon: Users, label: 'Active Workers', value: '4', change: '0' },
+  ];
+
+  const workers = [
+    { id: 'W001', name: 'John Mukama', shift: 'Morning', status: 'active', transactions: 45 },
+    { id: 'W002', name: 'Marie Uwase', shift: 'Morning', status: 'active', transactions: 38 },
+    { id: 'W003', name: 'Claude Nkusi', shift: 'Evening', status: 'off', transactions: 0 },
+    { id: 'W004', name: 'Sarah Ingabire', shift: 'Evening', status: 'active', transactions: 22 },
+  ];
+
+  const inventory = [
+    { type: 'Green (Bajaj)', capacity: 2000, used: 1450, color: '#2EC4B6' },
+    { type: 'Blue (Auto)', capacity: 5000, used: 3200, color: '#3A86FF' },
+    { type: 'Black (Truck)', capacity: 8000, used: 2100, color: '#8D99AE' },
+  ];
+
+  const recentTransactions = [
+    { id: 'TX001', plate: 'RAB 123D', type: 'bajaj', liters: 45, amount: 2250, worker: 'John M.', time: '2 min ago' },
+    { id: 'TX002', plate: 'RAB 456E', type: 'auto', liters: 120, amount: 6000, worker: 'Marie U.', time: '5 min ago' },
+    { id: 'TX003', plate: 'RAB 789F', type: 'truck', liters: 350, amount: 17500, worker: 'John M.', time: '8 min ago' },
+    { id: 'TX004', plate: 'RAB 321G', type: 'auto', liters: 90, amount: 4500, worker: 'Sarah I.', time: '12 min ago' },
+    { id: 'TX005', plate: 'RAB 654H', type: 'bajaj', liters: 35, amount: 1750, worker: 'Marie U.', time: '15 min ago' },
+  ];
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'transactions', label: 'Transactions', icon: Wallet },
     { id: 'workers', label: 'Workers', icon: Users },
-    { id: 'drivers', label: 'Drivers', icon: Car },
     { id: 'inventory', label: 'Inventory', icon: Fuel },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -106,7 +73,7 @@ export default function StationManagerDashboard() {
       <div className="dashboard-header">
         <div className="header-info">
           <h1>Station Dashboard</h1>
-          <p>{station.name} • Station ID: {stationId}</p>
+          <p>Shell Kigali Central • Station ID: ST001</p>
         </div>
         <div className="header-status">
           <span className="status-indicator active">
@@ -354,61 +321,8 @@ export default function StationManagerDashboard() {
               </div>
             </div>
           </motion.div>
-)}
-        
-        {activeTab === 'drivers' && (
-          <motion.div 
-            className="drivers-view"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="panel">
-              <div className="panel-header">
-                <h3>Registered Drivers</h3>
-                <button className="btn-primary">
-                  <Plus size={18} />
-                  Add Driver
-                </button>
-              </div>
-              <div className="panel-content">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Driver ID</th>
-                      <th>Name</th>
-                      <th>Vehicle Type</th>
-                      <th>Plate Number</th>
-                      <th>Phone</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>DRV001</td>
-                      <td>Bekele Altaye</td>
-                      <td><span className="vehicle-type bajaj">Bajaj</span></td>
-                      <td>ABC-1234</td>
-                      <td>+251 911 111 111</td>
-                      <td><span className="status-badge active">Active</span></td>
-                      <td><button className="btn-icon">View</button></td>
-                    </tr>
-                    <tr>
-                      <td>DRV002</td>
-                      <td>Tadesse Almaz</td>
-                      <td><span className="vehicle-type auto">Automobile</span></td>
-                      <td>DEF-5678</td>
-                      <td>+251 911 222 222</td>
-                      <td><span className="status-badge pending">Pending</span></td>
-                      <td><button className="btn-icon">Approve</button></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </motion.div>
         )}
-        
+
         {activeTab === 'inventory' && (
           <motion.div 
             className="inventory-view"
@@ -480,11 +394,11 @@ export default function StationManagerDashboard() {
                   <h4>Station Information</h4>
                   <div className="setting-item">
                     <label>Station Name</label>
-                    <input type="text" defaultValue={station.name} />
+                    <input type="text" defaultValue="Shell Kigali Central" />
                   </div>
                   <div className="setting-item">
                     <label>Station ID</label>
-                    <input type="text" defaultValue={stationId} disabled />
+                    <input type="text" defaultValue="ST001" disabled />
                   </div>
                   <div className="setting-item">
                     <label>Municipality</label>
@@ -519,7 +433,7 @@ export default function StationManagerDashboard() {
                       className="btn-primary"
                       onClick={() => {
                         if (fuelReceivedLiters) {
-                          recordFuelReceived(stationId, parseInt(fuelReceivedLiters));
+                          recordFuelReceived('ST001', parseInt(fuelReceivedLiters));
                           setFuelReceivedLiters('');
                         }
                       }}
@@ -558,7 +472,7 @@ export default function StationManagerDashboard() {
                         }}
                         onClick={() => {
                           setCurrentAvailability(key);
-                          setStationAvailability(stationId, avail);
+                          setStationAvailability('ST001', avail);
                         }}
                       >
                         <span className="avail-dot" style={{ background: avail.color }}></span>

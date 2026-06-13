@@ -2,19 +2,6 @@
   padding: 100px 24px 48px;
   max-width: 1600px;
   margin: 0 auto;
-  min-height: 100vh;
-  background: var(--page-background);
-  background-image: var(--page-gradient);
-  position: relative;
-  overflow-x: hidden;
-}
-
-.developer-dashboard::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: var(--page-gradient);
-  pointer-events: none;
 }
 
 .dashboard-header {

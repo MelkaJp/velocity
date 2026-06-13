@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { 
@@ -32,52 +32,38 @@ import {
 } from 'recharts';
 import './AdminDashboard.css';
 
+const revenueData = [
+  { date: 'Apr 7', revenue: 125000, municipal: 87500, developer: 37500 },
+  { date: 'Apr 8', revenue: 142000, municipal: 99400, developer: 42600 },
+  { date: 'Apr 9', revenue: 138000, municipal: 96600, developer: 41400 },
+  { date: 'Apr 10', revenue: 156000, municipal: 109200, developer: 46800 },
+  { date: 'Apr 11', revenue: 168000, municipal: 117600, developer: 50400 },
+  { date: 'Apr 12', revenue: 172000, municipal: 120400, developer: 51600 },
+  { date: 'Apr 13', revenue: 185000, municipal: 129500, developer: 55500 },
+];
+
+const stationPerformance = [
+  { id: 'ST001', name: 'Central Station', liters: 12500, efficiency: 94, status: 'optimal' },
+  { id: 'ST002', name: 'North Express', liters: 9800, efficiency: 88, status: 'good' },
+  { id: 'ST003', name: 'East Point', liters: 14200, efficiency: 96, status: 'optimal' },
+  { id: 'ST004', name: 'South Gate', liters: 7800, efficiency: 76, status: 'warning' },
+  { id: 'ST005', name: 'West Terminal', liters: 11000, efficiency: 91, status: 'good' },
+];
+
+const anomalyLog = [
+  { id: 'AN001', type: 'capacity_exceeded', vehicle: 'ABC-1234', station: 'ST003', details: 'Tank capacity 35L exceeded with 45L', timestamp: '2026-04-13T11:45:00', status: 'investigating' },
+  { id: 'AN002', type: 'gps_mismatch', vehicle: 'GHI-8765', station: 'ST005', details: 'GPS location 200m from station', timestamp: '2026-04-12T14:00:00', status: 'resolved' },
+  { id: 'AN003', type: 'ghost_gap', station: 'ST004', details: 'Ghost gap 3.2% exceeds 2% threshold', timestamp: '2026-04-12T23:59:00', status: 'flagged' },
+];
+
 export default function AdminDashboard() {
   const { state } = useVeloCity();
   const [activeTab, setActiveTab] = useState('overview');
-  const [revenueData, setRevenueData] = useState([]);
-  const [stationPerformance, setStationPerformance] = useState([]);
-  const [stats, setStats] = useState({ revenue: 0, stations: 0, vehicles: 0, transactions: 0 });
-  const [avgGhostGap, setAvgGhostGap] = useState(0);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const revenueRes = await fetch('http://localhost:8000/api/admin/revenue');
-        const revenueData = await revenueRes.json();
-        if (revenueData.success) {
-          setRevenueData(revenueData.data || []);
-        }
-        
-        const stationsRes = await fetch('http://localhost:8000/api/admin/stations/performance');
-        const stationsData = await stationsRes.json();
-        if (stationsData.success) {
-          setStationPerformance(stationsData.stations || []);
-        }
-        
-        const statsRes = await fetch('http://localhost:8000/api/admin/stats');
-        const statsData = await statsRes.json();
-        if (statsData.success) {
-          setStats(statsData.stats);
-          setAvgGhostGap(statsData.stats.avg_ghost_gap || 0);
-        }
-      } catch (error) {
-        console.error('Failed to fetch admin data:', error);
-      }
-    };
-    fetchData();
-  }, []);
-
-  const anomalyLog = [
-    { id: 'AN001', type: 'capacity_exceeded', vehicle: 'ABC-1234', station: 'ST003', details: 'Tank capacity 35L exceeded with 45L', timestamp: '2026-04-13T11:45:00', status: 'investigating' },
-    { id: 'AN002', type: 'gps_mismatch', vehicle: 'GHI-8765', station: 'ST005', details: 'GPS location 200m from station', timestamp: '2026-04-12T14:00:00', status: 'resolved' },
-    { id: 'AN003', type: 'ghost_gap', station: 'ST004', details: 'Ghost gap 3.2% exceeds 2% threshold', timestamp: '2026-04-12T23:59:00', status: 'flagged' },
-  ];
 
   const totalRevenue = revenueData.reduce((sum, d) => sum + d.revenue, 0);
   const municipalShare = Math.round(totalRevenue * 0.7);
   const developerShare = Math.round(totalRevenue * 0.3);
-  const displayGhostGap = avgGhostGap || 1.8;
+  const avgGhostGap = 1.8;
   const anomaliesActive = anomalyLog.filter(a => a.status !== 'resolved').length;
 
   return (
