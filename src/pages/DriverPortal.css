@@ -796,4 +796,8 @@
   .refuel-grid {
     grid-template-columns: 1fr;
   }
+
+  .voice-trigger-btn {
+    bottom: 70px;
+  }
 }
