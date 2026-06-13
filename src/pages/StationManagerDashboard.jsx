@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
+import { useToast } from '../components/Toast';
+import Button from '../components/Button';
 import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
@@ -26,6 +28,7 @@ import './StationManagerDashboard.css';
 
 export default function StationManagerDashboard() {
   const { state, setStationAvailability, getStationAvailability, FUEL_AVAILABILITY, recordFuelReceived, checkStationCapacity } = useVeloCity();
+  const { toast } = useToast();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
   const [currentAvailability, setCurrentAvailability] = useState('FULL');
@@ -282,10 +285,9 @@ export default function StationManagerDashboard() {
             <div className="panel">
               <div className="panel-header">
                 <h3>Station Workers</h3>
-                <button className="btn-primary" onClick={() => alert('Worker registration form would open here.')}>
-                  <Plus size={18} />
+                <Button variant="primary" icon={<Plus size={18} />} onClick={() => toast.success('Worker registration form opened')}>
                   Add Worker
-                </button>
+                </Button>
               </div>
               <div className="panel-content">
                 <table className="data-table">
@@ -335,13 +337,9 @@ export default function StationManagerDashboard() {
             <div className="panel">
               <div className="panel-header">
                 <h3>Fuel Inventory</h3>
-                <button className="btn-primary" onClick={() => {
-                  const liters = prompt('Enter fuel liters received:');
-                  if (liters) recordFuelReceived('ST001', parseInt(liters));
-                }}>
-                  <Plus size={18} />
+                <Button variant="primary" icon={<Plus size={18} />}>
                   Add Fuel
-                </button>
+                </Button>
               </div>
               <div className="panel-content">
                 <motion.div variants={staggerContainer(0.08)} initial="hidden" animate="visible">
@@ -437,18 +435,16 @@ export default function StationManagerDashboard() {
                       value={fuelReceivedLiters}
                       onChange={(e) => setFuelReceivedLiters(e.target.value)}
                     />
-                    <button 
-                      className="btn-primary"
-                      onClick={() => {
+                    <Button variant="primary" icon={<Fuel size={18} />} onClick={() => {
                         if (fuelReceivedLiters) {
                           recordFuelReceived('ST001', parseInt(fuelReceivedLiters));
                           setFuelReceivedLiters('');
+                          toast.success(`Recorded ${fuelReceivedLiters}L fuel delivery`);
                         }
                       }}
                     >
-                      <Fuel size={18} />
                       Record Delivery
-                    </button>
+                    </Button>
                   </div>
                   <div className="fuel-stats">
                     <div className="fuel-stat">
@@ -490,7 +486,7 @@ export default function StationManagerDashboard() {
                   </div>
                 </div>
 
-                <button className="btn-primary" onClick={() => alert('Settings saved successfully!')}>Save Changes</button>
+                <Button variant="primary" onClick={() => toast.success('Settings saved successfully!')}>Save Changes</Button>
               </div>
             </div>
           </motion.div>

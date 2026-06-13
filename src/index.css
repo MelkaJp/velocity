@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import './styles/modern.css';
+@import './styles/enhanced.css';
 
 @keyframes fadeIn {
   0% { opacity: 0; transform: translateY(20px); }

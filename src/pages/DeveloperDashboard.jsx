@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
+import { useToast } from '../components/Toast';
+import Button from '../components/Button';
 import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
@@ -28,6 +30,7 @@ import './DeveloperDashboard.css';
 
 export default function DeveloperDashboard() {
   const { state } = useVeloCity();
+  const { toast } = useToast();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -202,7 +205,7 @@ export default function DeveloperDashboard() {
             <div className="panel">
               <div className="panel-header">
                 <h3>All Municipalities</h3>
-                <button className="btn-primary" onClick={() => alert('New municipality registration form would open here.')}>Add Municipality</button>
+                <Button variant="primary" onClick={() => toast.info('Municipality registration form opened')}>Add Municipality</Button>
               </div>
               <div className="panel-content">
                 <table className="data-table">
@@ -251,7 +254,7 @@ export default function DeveloperDashboard() {
                 <h3>All Fuel Stations</h3>
                 <div className="header-filters">
                   <input type="text" placeholder="Search stations..." className="search-input" />
-                  <button className="btn-primary" onClick={() => alert('New station registration form would open here.')}>Add Station</button>
+                  <Button variant="primary" onClick={() => toast.info('Station registration form opened')}>Add Station</Button>
                 </div>
               </div>
               <div className="panel-content">
@@ -372,7 +375,7 @@ export default function DeveloperDashboard() {
                     <input type="number" defaultValue="500" />
                   </div>
                 </div>
-                <button className="btn-primary" onClick={() => alert('System preferences saved successfully!')}>Save Changes</button>
+                <Button variant="primary" onClick={() => toast.success('System preferences saved successfully!')}>Save Changes</Button>
               </div>
             </div>
           </motion.div>

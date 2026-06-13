@@ -1,7 +1,10 @@
 import { VeloCityProvider, useVeloCity } from './context/VeloCityContext';
 import { LanguageProvider } from './context/TranslationContext';
+import { ToastProvider } from './components/Toast';
+import { PageTransition } from './components/PageTransition';
 import Navbar from './components/Navbar';
 import Landing from './pages/Landing';
+import { AnimatePresence } from 'framer-motion';
 import DriverPortal from './pages/DriverPortal';
 import FleetManager from './pages/FleetManager';
 import StationManagerDashboard from './pages/StationManagerDashboard';
@@ -86,7 +89,11 @@ function VeloCityApp() {
         />
       )}
       <main className="main-content">
-        {renderContent()}
+        <AnimatePresence mode="wait">
+          <PageTransition key={state.isAuthenticated ? state.user?.role : state.currentPage}>
+            {renderContent()}
+          </PageTransition>
+        </AnimatePresence>
       </main>
     </div>
   );
@@ -96,7 +103,9 @@ function App() {
   return (
     <VeloCityProvider>
       <LanguageProvider>
-        <VeloCityApp />
+        <ToastProvider>
+          <VeloCityApp />
+        </ToastProvider>
       </LanguageProvider>
     </VeloCityProvider>
   );

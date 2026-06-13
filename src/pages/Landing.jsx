@@ -1,6 +1,7 @@
 import { useVeloCity } from '../context/VeloCityContext';
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Button from '../components/Button';
 import { 
   Fuel, Shield, Route, AlertTriangle,
   MessageCircle, Smartphone, Monitor, Map,
@@ -10,7 +11,7 @@ import {
 import {
   fadeUp, fadeIn, scaleIn, staggerContainer,
   cardHoverLift, cardHoverScale, accordionContent,
-  buttonHover, smoothEase,
+  smoothEase,
 } from '../animations';
 import {
   useScrollAnimation, useParallax, useCountUp, useMouseParallax,
@@ -219,28 +220,15 @@ export default function Landing() {
             animate="visible"
             transition={{ delay: 0.4 }}
           >
-            <motion.button 
-              className="btn-primary"
-              onClick={handleSignupClick}
-              {...buttonHover}
-            >
-              <span>Get Started</span>
-              <ChevronRight size={18} />
-            </motion.button>
-            <motion.button 
-              className="btn-secondary"
-              onClick={handleLoginClick}
-              {...buttonHover}
-            >
-              <span>Sign In</span>
-            </motion.button>
-            <motion.button 
-              className="btn-ghost"
-              onClick={() => setPage('features')}
-              {...buttonHover}
-            >
-              <span>Learn More</span>
-            </motion.button>
+            <Button variant="primary" size="lg" onClick={handleSignupClick}>
+              Get Started <ChevronRight size={18} />
+            </Button>
+            <Button variant="secondary" size="lg" onClick={handleLoginClick}>
+              Sign In
+            </Button>
+            <Button variant="ghost" size="lg" onClick={() => setPage('features')}>
+              Learn More
+            </Button>
           </motion.div>
         </motion.div>
 
@@ -553,12 +541,12 @@ export default function Landing() {
           <h2>Ready to Transform Fuel Distribution?</h2>
           <p>Join thousands of drivers, fleet owners, and station managers already using VeloCity.</p>
           <div className="cta-actions">
-            <button className="btn-primary" onClick={handleSignupClick}>
+            <Button variant="primary" size="lg" onClick={handleSignupClick}>
               Get Started <ChevronRight size={18} />
-            </button>
-            <button className="btn-secondary" onClick={() => setPage('contact')}>
+            </Button>
+            <Button variant="secondary" size="lg" onClick={() => setPage('contact')}>
               Contact Sales
-            </button>
+            </Button>
           </div>
         </motion.div>
       </section>

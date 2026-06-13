@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
+import { useToast } from '../components/Toast';
+import Button from '../components/Button';
 import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
   Building2, 
@@ -60,6 +62,7 @@ const anomalyLog = [
 export default function AdminDashboard() {
   const { state } = useVeloCity();
   const [activeTab, setActiveTab] = useState('overview');
+  const { toast } = useToast();
 
   const totalRevenue = revenueData.reduce((sum, d) => sum + d.revenue, 0);
   const municipalShare = Math.round(totalRevenue * 0.7);
@@ -335,10 +338,10 @@ export default function AdminDashboard() {
                     <span className="status-value">Apr 14, 2026 00:00</span>
                   </div>
                 </div>
-                <button className="btn-settle" onClick={() => alert('Settlement report generated. Check downloads.')}>
+                <Button variant="secondary" onClick={() => toast.success('Settlement report generated')}>
                   <Download size={18} />
                   Generate Report
-                </button>
+                </Button>
               </div>
             </div>
           </motion.div>
@@ -420,14 +423,14 @@ export default function AdminDashboard() {
               <div className="panel-header">
                 <h3>Anomaly Detection Log</h3>
                 <div className="panel-actions">
-                  <button className="btn-filter" onClick={() => alert('Filter options opened.')}>
+                  <Button variant="ghost" onClick={() => toast.info('Filter options opened')}>
                     <Filter size={16} />
                     Filter
-                  </button>
-                  <button className="btn-export" onClick={() => alert('Anomaly log exported.')}>
+                  </Button>
+                  <Button variant="outline" onClick={() => toast.success('Anomaly log exported')}>
                     <Download size={16} />
                     Export
-                  </button>
+                  </Button>
                 </div>
               </div>
 

@@ -3,6 +3,8 @@ import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { QRCodeSVG } from 'qrcode.react';
+import { useToast } from '../components/Toast';
+import Button from '../components/Button';
 import { 
   Plus, 
   Car, 
@@ -22,6 +24,7 @@ import './DriverPortal.css';
 
 export default function DriverPortal() {
   const { state, registerVehicle } = useVeloCity();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('register');
   const [formData, setFormData] = useState({
     type: 'bajaj',
@@ -361,14 +364,14 @@ export default function DriverPortal() {
               <div className="wallet-actions">
                 <button className="btn-wallet" onClick={() => {
                   const amt = prompt('Enter amount to add (USD):');
-                  if (amt) alert(`Added $${amt} to wallet.`);
+                  if (amt) toast.success(`Added $${amt} to wallet`);
                 }}>
                   <Plus size={18} />
                   Add Funds
                 </button>
                 <button className="btn-wallet outline" onClick={() => {
                   const amt = prompt('Enter amount to transfer:');
-                  if (amt) alert(`Transfer of $${amt} initiated.`);
+                  if (amt) toast.success(`Transfer of $${amt} initiated`);
                 }}>
                   Transfer
                 </button>

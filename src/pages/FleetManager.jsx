@@ -30,6 +30,8 @@ import {
   BarChart,
   Bar
 } from 'recharts';
+import { useToast } from '../components/Toast';
+import Button from '../components/Button';
 import './FleetManager.css';
 
 const costData = [
@@ -57,6 +59,7 @@ const weeklyData = [
 
 export default function FleetManager() {
   const { state, CURRENCY_RATES, calculateWeeklySpend, calculateMonthlySpend, formatCurrency, registerVehicle } = useVeloCity();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedFleet, setSelectedFleet] = useState('all');
 
@@ -317,10 +320,10 @@ export default function FleetManager() {
                   <Upload size={18} />
                   Add Vehicle
                 </button>
-                <button className="btn-toolbar" onClick={() => alert('Fleet data exported as CSV.')}>
+                <Button variant="secondary" onClick={() => toast.success('Fleet data exported as CSV')}>
                   <Download size={18} />
                   Export
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -452,7 +455,7 @@ export default function FleetManager() {
                       <Route size={16} />
                       <span>Route Verified</span>
                     </div>
-                    <button className="btn-verify-route" onClick={() => alert('Route verified for this vehicle.')}>Verify</button>
+                    <Button variant="outline" onClick={() => toast.success('Route verified for vehicle')}>Verify</Button>
                   </div>
                 ))}
                 {fleetVehicles.filter(v => v.type === 'truck').length === 0 && (
@@ -475,7 +478,7 @@ export default function FleetManager() {
                     <li>Priority support</li>
                     <li>Advanced analytics</li>
                   </ul>
-                  <button className="btn-sub" onClick={() => alert('You are already on the Premium plan.')}>Current Plan</button>
+                  <Button variant="secondary" onClick={() => toast.info('You are on the Premium plan')}>Current Plan</Button>
                 </motion.div>
                 <motion.div className="sub-card" variants={fadeUp} {...cardHoverLift}>
                   <div className="sub-header">
@@ -487,7 +490,7 @@ export default function FleetManager() {
                     <li>Basic analytics</li>
                     <li>Email support</li>
                   </ul>
-                  <button className="btn-sub outline" onClick={() => { const c = confirm('Upgrade to Basic for $49/mo?'); if (c) alert('Upgraded to Basic plan!'); }}>Upgrade</button>
+                  <Button variant="outline" onClick={() => toast.info('Upgrade dialog would open')}>Upgrade</Button>
                 </motion.div>
               </motion.div>
             </div>

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
+import { useToast } from '../components/Toast';
+import Button from '../components/Button';
 import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
@@ -27,6 +29,7 @@ import './MunicipalityDashboard.css';
 export default function MunicipalityDashboard() {
   const { state, CURRENCY_RATES, formatCurrency, convertCurrency } = useVeloCity();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const inspectionAlerts = state.inspectionAlerts || [];
   const [dateRange, setDateRange] = useState('7d');
@@ -246,7 +249,7 @@ export default function MunicipalityDashboard() {
             <div className="panel">
               <div className="panel-header">
                 <h3>All Stations</h3>
-                <button className="btn-primary" onClick={() => alert('New station registration form would open here.')}>Add Station</button>
+                <Button variant="primary" onClick={() => toast.info('Station registration form opened')}>Add Station</Button>
               </div>
               <div className="panel-content">
                 <table className="data-table">
@@ -353,25 +356,25 @@ export default function MunicipalityDashboard() {
                     <BarChart3 size={32} />
                     <h4>Revenue Summary</h4>
                     <p>Daily and monthly revenue breakdown by station</p>
-                    <button className="btn-secondary" onClick={() => alert('Revenue Summary report generated! Check downloads.')}>Generate</button>
+                    <Button variant="secondary" onClick={() => toast.success('Revenue report generated!')}>Generate</Button>
                   </motion.div>
                   <motion.div className="report-card" variants={fadeUp} {...cardHoverLift}>
                     <Car size={32} />
                     <h4>Vehicle Registration</h4>
                     <p>New vehicles registered in the period</p>
-                    <button className="btn-secondary" onClick={() => alert('Vehicle Registration report generated! Check downloads.')}>Generate</button>
+                    <Button variant="secondary" onClick={() => toast.success('Vehicle registration report generated!')}>Generate</Button>
                   </motion.div>
                   <motion.div className="report-card" variants={fadeUp} {...cardHoverLift}>
                     <Truck size={32} />
                     <h4>Vehicle Type Analysis</h4>
                     <p>Distribution of vehicle types (Green/Blue/Black QR)</p>
-                    <button className="btn-secondary" onClick={() => alert('Vehicle Type Analysis report generated! Check downloads.')}>Generate</button>
+                    <Button variant="secondary" onClick={() => toast.success('Vehicle type analysis report generated!')}>Generate</Button>
                   </motion.div>
                   <motion.div className="report-card" variants={fadeUp} {...cardHoverLift}>
                     <Wallet size={32} />
                     <h4>Settlement Report</h4>
                     <p>70/30 revenue split calculations</p>
-<button className="btn-secondary" onClick={() => alert('Settlement report generated! Check downloads.')}>Generate</button>
+<Button variant="secondary" onClick={() => toast.success('Settlement report generated!')}>Generate</Button>
                   </motion.div>
                 </motion.div>
               </div>
@@ -389,7 +392,7 @@ export default function MunicipalityDashboard() {
               <div className="panel-header">
                 <h3>Inspection Alerts</h3>
                 {inspectionAlerts.length > 0 && (
-                  <button className="btn-primary" onClick={() => alert('Inspector dispatched to the flagged station.')}>Dispatch Inspector</button>
+                  <Button variant="primary" onClick={() => toast.success('Inspector dispatched to flagged station')}>Dispatch Inspector</Button>
                 )}
               </div>
               <div className="panel-content">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
+import { useToast } from '../components/Toast';
 import api from '../utils/api';
 import { motion } from 'framer-motion';
 import { 
@@ -19,6 +20,7 @@ import './StationDashboard.css';
 
 export default function StationDashboard() {
   const { state } = useVeloCity();
+  const { toast } = useToast();
   const [scanMode, setScanMode] = useState(false);
   const [scannedCode, setScannedCode] = useState('');
   const [litersInput, setLitersInput] = useState('');
@@ -49,7 +51,7 @@ export default function StationDashboard() {
     
     const vehicle = state.vehicles.find(v => v.qr_code === scannedCode);
     if (!vehicle) {
-      alert('Invalid QR Code - Vehicle not found');
+      toast.error('Invalid QR Code - Vehicle not found');
       return;
     }
 
@@ -76,7 +78,7 @@ export default function StationDashboard() {
       }, 4000);
     } catch (error) {
       console.error('Transaction failed:', error);
-      alert('Transaction failed: ' + error.message);
+      toast.error('Transaction failed: ' + error.message);
     } finally {
       setProcessing(false);
     }
