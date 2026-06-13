@@ -24,8 +24,14 @@ import {
   Clock,
   AlertTriangle,
   Fuel,
-  Gauge
+  Gauge,
+  Shield,
+  Flag
 } from 'lucide-react';
+import StationQueueView from '../components/StationQueueView';
+import TheftAlertPanel from '../components/TheftAlertPanel';
+import EscalationWorkflow from '../components/EscalationWorkflow';
+import OfflineSyncBanner from '../components/OfflineSyncBanner';
 import './StationManagerDashboard.css';
 
 export default function StationManagerDashboard() {
@@ -208,8 +214,37 @@ export default function StationManagerDashboard() {
                 </motion.div>
               </div>
             </div>
+
+            <div className="panel-grid" style={{ marginTop: 24 }}>
+              <div className="panel">
+                <div className="panel-header">
+                  <h3>Live Queue</h3>
+                </div>
+                <div className="panel-content">
+                  <StationQueueView stationId="ST001" />
+                </div>
+              </div>
+              <div className="panel">
+                <div className="panel-header">
+                  <h3><Shield size={16} /> Theft Detection</h3>
+                </div>
+                <div className="panel-content">
+                  <TheftAlertPanel />
+                </div>
+              </div>
+              <div className="panel">
+                <div className="panel-header">
+                  <h3><Flag size={16} /> Incidents</h3>
+                </div>
+                <div className="panel-content">
+                  <EscalationWorkflow stationId="ST001" />
+                </div>
+              </div>
+            </div>
           </motion.div>
         )}
+
+        <OfflineSyncBanner />
 
         {activeTab === 'transactions' && (
           <motion.div 

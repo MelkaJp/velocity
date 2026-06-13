@@ -1,0 +1,110 @@
+.theft-panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.theft-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.theft-panel-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.theft-count {
+  background: rgba(239, 71, 111, 0.15);
+  color: var(--danger);
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.theft-filters {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+}
+
+.theft-filter {
+  padding: 4px 10px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-transform: capitalize;
+  transition: var(--transition);
+}
+
+.theft-filter.active {
+  background: rgba(239, 71, 111, 0.1);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.theft-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+.theft-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.theft-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent;
+}
+
+.theft-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.theft-pattern {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  flex: 1;
+}
+
+.theft-severity {
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.theft-msg {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0 0 6px;
+}
+
+.theft-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}

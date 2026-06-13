@@ -7,6 +7,9 @@ import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations'
 import { QRCodeSVG } from 'qrcode.react';
 import { useToast } from '../components/Toast';
 import Button from '../components/Button';
+import RefuelQRCode from '../components/RefuelQRCode';
+import StationQueueView from '../components/StationQueueView';
+import VoicePromptOverlay from '../components/VoicePromptOverlay';
 import { 
   Plus, 
   Car, 
@@ -19,15 +22,21 @@ import {
   Download,
   Check,
   AlertTriangle,
-  Loader
+  Loader,
+  RefreshCw,
+  Users,
+  Crown,
+  Volume2
 } from 'lucide-react';
 import { vehicleTypes } from '../data/sampleData';
 import './DriverPortal.css';
 
 export default function DriverPortal() {
-  const { state, registerVehicle } = useVeloCity();
+  const { state, registerVehicle, addToQueue, upgradeSubscription, getSubscription, SUBSCRIPTION_TIERS, speakPrompt } = useVeloCity();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('register');
+  const [voiceActive, setVoiceActive] = useState(false);
+  const [voiceKey, setVoiceKey] = useState('');
   const [formData, setFormData] = useState({
     type: 'bajaj',
     plate: '',
@@ -134,6 +143,13 @@ export default function DriverPortal() {
         >
           <History size={18} />
           History
+        </button>
+        <button 
+          className={`tab ${activeTab === 'refuel' ? 'active' : ''}`}
+          onClick={() => setActiveTab('refuel')}
+        >
+          <RefreshCw size={18} />
+          Refuel
         </button>
       </div>
 
@@ -320,6 +336,21 @@ export default function DriverPortal() {
                           <span className="stat-value">${vehicle.wallet}</span>
                         </div>
                       </div>
+                      <div className="vehicle-sub-tier">
+                        {(() => {
+                          const sub = state.subscriptions?.find(s => s.vehicleId === vehicle.id);
+                          const tier = sub ? SUBSCRIPTION_TIERS[sub.tier] : null;
+                          return tier ? (
+                            <span className="tier-badge" style={{ background: `${tier.color}20`, color: tier.color }}>
+                              <Crown size={12} /> {tier.label}
+                            </span>
+                          ) : (
+                            <span className="tier-badge basic">
+                              <Crown size={12} /> Basic
+                            </span>
+                          );
+                        })()}
+                      </div>
                       <div className="vehicle-qr">
                         <QRCodeSVG 
                           value={vehicle.qr_code}
@@ -435,7 +466,104 @@ export default function DriverPortal() {
             </motion.div>
           </motion.div>
         )}
+
+        {activeTab === 'refuel' && (
+          <motion.div 
+            className="refuel-section"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <div className="refuel-grid">
+              <div className="refuel-main">
+                <h2>Refuel Session</h2>
+                {myVehicles.length === 0 ? (
+                  <EmptyState icon={Car} title="Register a vehicle first" action={<Button variant="primary" onClick={() => setActiveTab('register')}>Register Vehicle</Button>} />
+                ) : (
+                  <div className="refuel-vehicles-list">
+                    {myVehicles.map(vehicle => (
+                      <div key={vehicle.id} className="refuel-vehicle-item">
+                        <div className="refuel-vehicle-header">
+                          <strong>{vehicle.plate}</strong>
+                          <span className="refuel-vehicle-type">{vehicle.type}</span>
+                        </div>
+                        <RefuelQRCode vehicle={vehicle} />
+                        <VoicePromptOverlay
+                          active={voiceActive && voiceKey === vehicle.id}
+                          promptKey="scanQR"
+                          onClose={() => { setVoiceActive(false); setVoiceKey(''); }}
+                        />
+                        <div className="refuel-actions">
+                          {state.stations.slice(0, 3).map(station => (
+                            <Button
+                              key={station.id}
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                addToQueue(station.id, vehicle.id, state.user?.id, vehicle.plate, vehicle.type);
+                                toast.success(`Added to ${station.name} queue`);
+                                setVoiceActive(true);
+                                setVoiceKey(vehicle.id);
+                                speakPrompt('Added to queue. Please proceed to the station.', 'en');
+                              }}
+                            >
+                              <MapPin size={14} /> {station.name.split(' ')[0]}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="refuel-sidebar">
+                <h2>Station Queues</h2>
+                <div className="refuel-stations-queue">
+                  {state.stations.slice(0, 3).map(station => (
+                    <StationQueueView key={station.id} stationId={station.id} />
+                  ))}
+                </div>
+
+                <h2 style={{ marginTop: 24 }}>Subscription</h2>
+                <div className="subscription-upgrade">
+                  {myVehicles.map(vehicle => {
+                    const sub = state.subscriptions?.find(s => s.vehicleId === vehicle.id);
+                    const currentTier = sub ? SUBSCRIPTION_TIERS[sub.tier] : SUBSCRIPTION_TIERS.basic;
+                    return (
+                      <div key={vehicle.id} className="sub-card">
+                        <div className="sub-card-header">
+                          <Crown size={16} style={{ color: currentTier.color }} />
+                          <span>{vehicle.plate}</span>
+                          <span className="sub-tier-label" style={{ color: currentTier.color }}>{currentTier.label}</span>
+                        </div>
+                        <div className="sub-tier-options">
+                          {Object.values(SUBSCRIPTION_TIERS).map(tier => (
+                            <button
+                              key={tier.id}
+                              className={`sub-tier-btn ${sub?.tier === tier.id ? 'active' : ''}`}
+                              style={sub?.tier === tier.id ? { borderColor: tier.color, background: `${tier.color}15` } : {}}
+                              onClick={() => {
+                                upgradeSubscription(vehicle.id, tier.id);
+                                toast.success(`Upgraded ${vehicle.plate} to ${tier.label}`);
+                              }}
+                            >
+                              <strong>{tier.label}</strong>
+                              <span>{tier.price} ETB/mo</span>
+                              <small>{tier.dailyLimit}L/day</small>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </div>
+      <button className="voice-trigger-btn" onClick={() => { setVoiceActive(!voiceActive); setVoiceKey(myVehicles[0]?.id || ''); }} title="Voice Assistant">
+        <Volume2 size={20} />
+      </button>
     </div>
   );
 }

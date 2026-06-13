@@ -631,3 +631,169 @@
     justify-content: space-between;
   }
 }
+
+.vehicle-sub-tier {
+  margin-top: 4px;
+}
+
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.tier-badge.basic {
+  background: rgba(141, 153, 174, 0.15);
+  color: #8D99AE;
+}
+
+.refuel-section {
+  padding: 8px 0;
+}
+
+.refuel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.refuel-vehicles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.refuel-vehicle-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.refuel-vehicle-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.refuel-vehicle-type {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.refuel-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.refuel-sidebar h2 {
+  font-size: 1rem;
+  margin-bottom: 16px;
+}
+
+.refuel-stations-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subscription-upgrade {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sub-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.sub-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.sub-tier-label {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sub-tier-options {
+  display: flex;
+  gap: 8px;
+}
+
+.sub-tier-btn {
+  flex: 1;
+  padding: 10px 8px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-secondary);
+}
+
+.sub-tier-btn strong {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 2px;
+}
+
+.sub-tier-btn span {
+  display: block;
+  font-size: 0.7rem;
+}
+
+.sub-tier-btn small {
+  display: block;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.sub-tier-btn:hover {
+  border-color: var(--accent-green);
+}
+
+.voice-trigger-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  color: var(--primary);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 212, 170, 0.4);
+  z-index: 100;
+  transition: var(--transition);
+}
+
+.voice-trigger-btn:hover {
+  transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+  .refuel-grid {
+    grid-template-columns: 1fr;
+  }
+}

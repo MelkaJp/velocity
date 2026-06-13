@@ -1,0 +1,109 @@
+.refuel-qr-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.refuel-qr-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  color: var(--accent-blue);
+}
+
+.refuel-qr-header h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.refuel-qr-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.refuel-qr-active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.refuel-qr-code {
+  background: white;
+  padding: 16px;
+  border-radius: var(--radius-md);
+}
+
+.refuel-qr-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.refuel-qr-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.refuel-qr-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.refuel-qr-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.refuel-quota-select label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.quota-options {
+  display: flex;
+  gap: 8px;
+}
+
+.quota-btn {
+  flex: 1;
+  padding: 10px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.quota-btn:hover {
+  border-color: var(--accent-green);
+}
+
+.quota-btn.active {
+  background: rgba(0, 212, 170, 0.15);
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.expiring {
+  color: var(--danger);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

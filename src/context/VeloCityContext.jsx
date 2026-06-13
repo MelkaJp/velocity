@@ -56,6 +56,27 @@ const FUEL_AVAILABILITY = {
   NONE: { value: 0, label: 'Not Available', color: '#8D99AE' },
 };
 
+const SUBSCRIPTION_TIERS = {
+  basic: { id: 'basic', label: 'Basic', price: 1000, dailyLimit: 50, monthlyLimit: 600, color: '#8D99AE' },
+  premium: { id: 'premium', label: 'Premium', price: 2500, dailyLimit: 150, monthlyLimit: 1800, color: '#FFD166' },
+  enterprise: { id: 'enterprise', label: 'Enterprise', price: 5000, dailyLimit: 999, monthlyLimit: 9999, color: '#06D6A0' },
+};
+
+const ESCALATION_LEVELS = {
+  WORKER: { level: 1, role: 'station_worker', label: 'Initial Report' },
+  STATION_MANAGER: { level: 2, role: 'station_manager', label: 'Station Review' },
+  MUNICIPALITY: { level: 3, role: 'municipality_admin', label: 'Municipality Review' },
+  DEVELOPER: { level: 4, role: 'developer_admin', label: 'Developer Resolution' },
+};
+
+const THEFT_PATTERNS = {
+  RAPID_FILL: { id: 'rapid_fill', label: 'Rapid Re-Fill', thresholdMinutes: 30, severity: 'high' },
+  OVER_CAPACITY: { id: 'over_capacity', label: 'Exceeds Tank Capacity', thresholdPercent: 10, severity: 'critical' },
+  GEO_SPOOF: { id: 'geo_spoof', label: 'Geographic Impossibility', thresholdKm: 50, severity: 'critical' },
+  SAME_QR_MULTI: { id: 'same_qr_multi', label: 'Same QR Multiple Stations', thresholdMinutes: 15, severity: 'high' },
+  BLACK_MARKET: { id: 'black_market', label: 'Black Market Resale', thresholdSoldPercent: 110, severity: 'critical' },
+};
+
 const ASSOCIATIONS = [
   { id: 'A1', name: 'A1 - Bajaj Association', type: 'bajaj' },
   { id: 'A2', name: 'A2 - Bajaj Association', type: 'bajaj' },
@@ -102,6 +123,13 @@ const initialState = {
   pendingReviews: [],
   errorLogs: [],
   flaggedAccounts: [],
+  queue: [],
+  refuelQRCodes: [],
+  incidents: [],
+  pendingOffline: [],
+  theftAlerts: [],
+  subscriptions: [],
+  voiceLogs: [],
 };
 
 function veloCityReducer(state, action) {
@@ -185,6 +213,32 @@ function veloCityReducer(state, action) {
       return { ...state, driverLocks: { ...state.driverLocks, [action.payload.driverId]: action.payload.lockedUntil } };
     case 'SET_CURRENCY':
       return { ...state, currency: action.payload };
+    case 'ADD_QUEUE_ENTRY':
+      return { ...state, queue: [...state.queue, action.payload] };
+    case 'UPDATE_QUEUE_ENTRY':
+      return { ...state, queue: state.queue.map(q => q.id === action.payload.id ? { ...q, ...action.payload } : q) };
+    case 'REMOVE_QUEUE_ENTRY':
+      return { ...state, queue: state.queue.filter(q => q.id !== action.payload.id) };
+    case 'SET_QUEUE':
+      return { ...state, queue: action.payload };
+    case 'ADD_REFUEL_QR':
+      return { ...state, refuelQRCodes: [...state.refuelQRCodes, action.payload] };
+    case 'REMOVE_REFUEL_QR':
+      return { ...state, refuelQRCodes: state.refuelQRCodes.filter(q => q.id !== action.payload.id) };
+    case 'ADD_INCIDENT':
+      return { ...state, incidents: [...state.incidents, action.payload] };
+    case 'UPDATE_INCIDENT':
+      return { ...state, incidents: state.incidents.map(i => i.id === action.payload.id ? { ...i, ...action.payload } : i) };
+    case 'ADD_PENDING_OFFLINE':
+      return { ...state, pendingOffline: [...state.pendingOffline, action.payload] };
+    case 'CLEAR_PENDING_OFFLINE':
+      return { ...state, pendingOffline: [] };
+    case 'ADD_THEFT_ALERT':
+      return { ...state, theftAlerts: [action.payload, ...(state.theftAlerts || [])] };
+    case 'ADD_SUBSCRIPTION':
+      return { ...state, subscriptions: [...state.subscriptions, action.payload] };
+    case 'ADD_VOICE_LOG':
+      return { ...state, voiceLogs: [...state.voiceLogs, action.payload] };
     default:
       return state;
   }
@@ -746,7 +800,7 @@ const calculateSubscriptionRevenue = (subscriptionFee) => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
-const sendNotification = async (driverId, message) => {
+  const sendNotification = async (driverId, message) => {
     const notification = {
       id: `NOTIF${Date.now()}`,
       type: 'general',
@@ -755,10 +809,262 @@ const sendNotification = async (driverId, message) => {
       sentAt: new Date().toISOString(),
       channel: 'sms',
     };
-    
     dispatch({ type: 'ADD_NOTIFICATION', payload: notification });
-    
     return { success: true, notification };
+  };
+
+  const generateRefuelQuotaQR = (vehicleId, appointmentId, quota, expiresInMinutes = 60) => {
+    const id = `QR${Date.now()}${Math.random().toString(36).substr(2, 4)}`;
+    const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000).toISOString();
+    const qrCode = {
+      id,
+      vehicleId,
+      appointmentId: appointmentId || null,
+      quota,
+      used: 0,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      expiresAt,
+      token: `REFUEL-${vehicleId.slice(-4)}-${Date.now().toString(36).toUpperCase()}`,
+    };
+    dispatch({ type: 'ADD_REFUEL_QR', payload: qrCode });
+    localStorage.setItem(`refuel_qr_${id}`, JSON.stringify(qrCode));
+    return qrCode;
+  };
+
+  const addToQueue = (stationId, vehicleId, driverId, vehiclePlate, vehicleType) => {
+    const existing = state.queue.filter(q => q.stationId === stationId && q.status === 'waiting');
+    const entry = {
+      id: `Q${Date.now()}`,
+      stationId,
+      vehicleId,
+      driverId,
+      vehiclePlate,
+      vehicleType,
+      position: existing.length + 1,
+      status: 'waiting',
+      joinedAt: new Date().toISOString(),
+      estimatedWaitMinutes: existing.length * 8,
+    };
+    dispatch({ type: 'ADD_QUEUE_ENTRY', payload: entry });
+    return entry;
+  };
+
+  const updateQueueEntry = (id, updates) => {
+    dispatch({ type: 'UPDATE_QUEUE_ENTRY', payload: { id, ...updates } });
+  };
+
+  const getStationQueue = (stationId) => {
+    return state.queue.filter(q => q.stationId === stationId).sort((a, b) => a.position - b.position);
+  };
+
+  const detectFuelTheft = (transaction) => {
+    const alerts = [];
+    const recentTransactions = state.transactions.filter(t =>
+      t.vehicle_id === transaction.vehicle_id &&
+      new Date(t.timestamp) > new Date(Date.now() - 30 * 60 * 1000)
+    );
+
+    if (recentTransactions.length >= 2) {
+      const lastFill = recentTransactions[0];
+      const minutesBetween = (new Date(transaction.timestamp) - new Date(lastFill.timestamp)) / 60000;
+      if (minutesBetween < THEFT_PATTERNS.RAPID_FILL.thresholdMinutes) {
+        alerts.push({
+          id: `THEFT${Date.now()}`,
+          pattern: 'rapid_fill',
+          severity: 'high',
+          message: `Vehicle ${transaction.vehicle_id} refilled ${recentTransactions.length + 1}x in ${minutesBetween.toFixed(0)}min`,
+          transactionId: transaction.id,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
+
+    if (transaction.qr_code) {
+      const multiStation = state.transactions.find(t =>
+        t.qr_code === transaction.qr_code &&
+        t.station_id !== transaction.station_id &&
+        new Date(t.timestamp) > new Date(Date.now() - THEFT_PATTERNS.SAME_QR_MULTI.thresholdMinutes * 60 * 1000)
+      );
+      if (multiStation) {
+        alerts.push({
+          id: `THEFT${Date.now() + 1}`,
+          pattern: 'same_qr_multi',
+          severity: 'high',
+          message: `QR ${transaction.qr_code} used at ${transaction.station_id} and ${multiStation.station_id} within minutes`,
+          transactionId: transaction.id,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
+
+    alerts.forEach(alert => dispatch({ type: 'ADD_THEFT_ALERT', payload: alert }));
+    return alerts;
+  };
+
+  const checkDailyLimit = (vehicleId, liters) => {
+    const vehicle = state.vehicles.find(v => v.id === vehicleId);
+    if (!vehicle) return { allowed: true };
+    const sub = state.subscriptions.find(s => s.vehicleId === vehicleId);
+    if (!sub) return { allowed: true };
+    const tier = SUBSCRIPTION_TIERS[sub.tier];
+    if (!tier) return { allowed: true };
+    const todayFilled = state.transactions
+      .filter(t => t.vehicle_id === vehicleId && new Date(t.timestamp).toDateString() === new Date().toDateString())
+      .reduce((sum, t) => sum + (t.liters || 0), 0);
+    const wouldExceed = todayFilled + liters > tier.dailyLimit;
+    return { allowed: !wouldExceed, todayFilled, dailyLimit: tier.dailyLimit, tier: tier.label };
+  };
+
+  const upgradeSubscription = (vehicleId, tierId) => {
+    const existing = state.subscriptions.find(s => s.vehicleId === vehicleId);
+    if (existing) {
+      const updated = { ...existing, tier: tierId, updatedAt: new Date().toISOString() };
+      dispatch({ type: 'ADD_SUBSCRIPTION', payload: updated });
+    } else {
+      const sub = {
+        id: `SUB${Date.now()}`,
+        vehicleId,
+        tier: tierId,
+        startDate: new Date().toISOString(),
+        status: 'active',
+      };
+      dispatch({ type: 'ADD_SUBSCRIPTION', payload: sub });
+    }
+    return { success: true };
+  };
+
+  const getSubscription = (vehicleId) => {
+    return state.subscriptions.find(s => s.vehicleId === vehicleId) || null;
+  };
+
+  const createIncident = (reportedBy, reportedByRole, type, description, stationId) => {
+    const incident = {
+      id: `INC${Date.now()}`,
+      reportedBy,
+      reportedByRole,
+      type,
+      description,
+      stationId,
+      status: 'open',
+      currentLevel: ESCALATION_LEVELS.WORKER.level,
+      currentLevelRole: ESCALATION_LEVELS.WORKER.role,
+      history: [{
+        action: 'created',
+        by: reportedBy,
+        role: reportedByRole,
+        timestamp: new Date().toISOString(),
+      }],
+      resolution: null,
+      createdAt: new Date().toISOString(),
+    };
+    dispatch({ type: 'ADD_INCIDENT', payload: incident });
+    sendNotification(reportedBy, `Incident #${incident.id} created: ${type} — ${description}`);
+    return incident;
+  };
+
+  const escalateIncident = (incidentId) => {
+    const incident = state.incidents.find(i => i.id === incidentId);
+    if (!incident) return { success: false };
+    const nextLevel = incident.currentLevel + 1;
+    const levelConfig = Object.values(ESCALATION_LEVELS).find(l => l.level === nextLevel);
+    if (!levelConfig) {
+      return resolveIncident(incidentId, 'Auto-escalated to max level — resolved at developer level');
+    }
+    const updated = {
+      ...incident,
+      currentLevel: nextLevel,
+      currentLevelRole: levelConfig.role,
+      history: [...incident.history, {
+        action: 'escalated',
+        by: state.user?.id,
+        role: state.user?.role,
+        toLevel: levelConfig.label,
+        timestamp: new Date().toISOString(),
+      }],
+    };
+    dispatch({ type: 'UPDATE_INCIDENT', payload: updated });
+    sendNotification(incident.reportedBy, `Incident #${incidentId} escalated to ${levelConfig.label}`);
+    return { success: true, incident: updated };
+  };
+
+  const resolveIncident = (incidentId, resolution) => {
+    const updated = {
+      id: incidentId,
+      status: 'resolved',
+      resolution,
+      history: [{
+        action: 'resolved',
+        by: state.user?.id,
+        role: state.user?.role,
+        timestamp: new Date().toISOString(),
+      }],
+    };
+    dispatch({ type: 'UPDATE_INCIDENT', payload: updated });
+    sendNotification(state.user?.id, `Incident #${incidentId} has been resolved: ${resolution}`);
+    return { success: true };
+  };
+
+  const addOfflineTransaction = (transaction) => {
+    const entry = {
+      id: `OFF${Date.now()}`,
+      ...transaction,
+      queuedAt: new Date().toISOString(),
+      synced: false,
+    };
+    dispatch({ type: 'ADD_PENDING_OFFLINE', payload: entry });
+    const existing = JSON.parse(localStorage.getItem('velocity_offline_queue') || '[]');
+    localStorage.setItem('velocity_offline_queue', JSON.stringify([...existing, entry]));
+    return entry;
+  };
+
+  const syncOfflineQueue = async () => {
+    const queue = JSON.parse(localStorage.getItem('velocity_offline_queue') || '[]');
+    const unsynced = queue.filter(q => !q.synced);
+    if (unsynced.length === 0) return { synced: 0 };
+    let synced = 0;
+    for (const entry of unsynced) {
+      try {
+        await createTransaction(entry);
+        entry.synced = true;
+        synced++;
+      } catch (e) {
+        break;
+      }
+    }
+    localStorage.setItem('velocity_offline_queue', JSON.stringify(queue));
+    dispatch({ type: 'CLEAR_PENDING_OFFLINE' });
+    return { synced };
+  };
+
+  const sendSMS = (to, message) => {
+    const sms = {
+      id: `SMS${Date.now()}`,
+      to,
+      message,
+      sentAt: new Date().toISOString(),
+      channel: 'sms',
+      status: 'sent',
+    };
+    dispatch({ type: 'ADD_NOTIFICATION', payload: {
+      id: sms.id,
+      type: 'info',
+      text: `SMS to ${to}: ${message}`,
+      time: 'just now',
+      read: false,
+    }});
+    return sms;
+  };
+
+  const speakPrompt = (text, lang = 'en') => {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang === 'am' ? 'am-ET' : lang === 'or' ? 'om-ET' : 'en-US';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+    dispatch({ type: 'ADD_VOICE_LOG', payload: { id: `VOICE${Date.now()}`, text, lang, spokenAt: new Date().toISOString() } });
   };
 
   return (
@@ -812,6 +1118,24 @@ const sendNotification = async (driverId, message) => {
       unflagAccount,
       banAccount,
       isAccountFlagged,
+      SUBSCRIPTION_TIERS,
+      ESCALATION_LEVELS,
+      THEFT_PATTERNS,
+      generateRefuelQuotaQR,
+      addToQueue,
+      updateQueueEntry,
+      getStationQueue,
+      detectFuelTheft,
+      checkDailyLimit,
+      upgradeSubscription,
+      getSubscription,
+      createIncident,
+      escalateIncident,
+      resolveIncident,
+      addOfflineTransaction,
+      syncOfflineQueue,
+      sendSMS,
+      speakPrompt,
     }}>
       {children}
     </VeloCityContext.Provider>

@@ -4,6 +4,9 @@ import { useTranslation } from '../context/TranslationContext';
 import PageHeader from '../components/PageHeader';
 import Button from '../components/Button';
 import { motion } from 'framer-motion';
+import EscalationWorkflow from '../components/EscalationWorkflow';
+import OfflineSyncBanner from '../components/OfflineSyncBanner';
+import VoicePromptOverlay from '../components/VoicePromptOverlay';
 import { 
   Scan, 
   CheckCircle, 
@@ -17,7 +20,8 @@ import {
   Camera,
   StopCircle,
   RefreshCw,
-  User
+  User,
+  Flag
 } from 'lucide-react';
 import './StationWorkerDashboard.css';
 
@@ -459,6 +463,10 @@ export default function StationWorkerDashboard() {
           </div>
         </div>
       </div>
+      <EscalationWorkflow stationId="ST001" />
+      <OfflineSyncBanner />
+      <VoicePromptOverlay active={driverVerified} promptKey="fueling" />
+      <VoicePromptOverlay active={scannedVehicle && !driverVerified} promptKey="scanQR" />
     </div>
   );
 }
