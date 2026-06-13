@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
 import { motion } from 'framer-motion';
+import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
   Users, 
   Building2, 
@@ -111,9 +112,9 @@ export default function DeveloperDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <div className="stats-grid">
+            <motion.div className="stats-grid" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
               {stats.map((stat, index) => (
-                <div key={index} className="stat-card">
+                <motion.div key={index} className="stat-card" variants={fadeUp} {...cardHoverLift}>
                   <div className="stat-icon" style={{ background: `${stat.color}20`, color: stat.color }}>
                     <stat.icon size={24} />
                   </div>
@@ -122,9 +123,9 @@ export default function DeveloperDashboard() {
                     <span className="stat-label">{stat.label}</span>
                   </div>
                   <span className="stat-change positive">{stat.change}</span>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
 
             <div className="dashboard-panels">
               <div className="panel">
@@ -300,8 +301,9 @@ export default function DeveloperDashboard() {
                 <h3>System Health</h3>
               </div>
               <div className="panel-content">
+                <motion.div variants={staggerContainer(0.08)} initial="hidden" animate="visible">
                 {systemHealth.map((service, index) => (
-                  <div key={index} className="service-card">
+                  <motion.div key={index} className="service-card" variants={fadeUp} {...cardHoverLift}>
                     <div className="service-info">
                       <span className="service-name">{service.name}</span>
                       <span className="service-uptime">Uptime: {service.uptime}</span>
@@ -314,8 +316,9 @@ export default function DeveloperDashboard() {
                       </span>
                       <span className="service-latency">{service.latency}</span>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
+                </motion.div>
               </div>
             </div>
           </motion.div>

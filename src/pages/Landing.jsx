@@ -1,28 +1,20 @@
 import { useVeloCity } from '../context/VeloCityContext';
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Fuel, 
-  Shield, 
-  Route, 
-  Wallet, 
-  AlertTriangle,
-  MessageCircle, 
-  Smartphone, 
-  Monitor, 
-  Map,
-  CheckCircle,
-  Sparkles,
-  ChevronRight,
-  Zap,
-  Lock,
-  BarChart3,
-  Star,
-  ChevronDown,
-  Phone,
-  Mail,
-  ExternalLink
+  Fuel, Shield, Route, AlertTriangle,
+  MessageCircle, Smartphone, Monitor, Map,
+  Sparkles, ChevronRight, Zap,
+  Star, ChevronDown, Phone, Mail, ExternalLink
 } from 'lucide-react';
+import {
+  fadeUp, fadeIn, scaleIn, staggerContainer,
+  cardHoverLift, cardHoverScale, accordionContent,
+  buttonHover, smoothEase,
+} from '../animations';
+import {
+  useScrollAnimation, useParallax, useCountUp, useMouseParallax,
+} from '../animations';
 import Auth from './Auth';
 import './Landing.css';
 
@@ -31,6 +23,18 @@ export default function Landing() {
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [openFaq, setOpenFaq] = useState(null);
+
+  const heroRef = useRef(null);
+  const featuresRef = useRef(null);
+  const statsRef = useRef(null);
+
+  useParallax(heroRef, 0.15);
+  useScrollAnimation(featuresRef, { type: 'fade-in-up' });
+
+  const vehicles = useCountUp(2847, { duration: 2500 });
+  const stations = useCountUp(42, { duration: 1500 });
+
+  const protStyle = useMouseParallax(heroRef, 0.3);
 
   const handleLoginClick = () => {
     setAuthMode('login');
@@ -51,8 +55,8 @@ export default function Landing() {
   }
 
   const stats = [
-    { value: '2,847', label: 'Vehicles' },
-    { value: '42', label: 'Stations' },
+    { value: vehicles.count.toLocaleString(), label: 'Vehicles', ref: vehicles.ref },
+    { value: stations.count, label: 'Stations', ref: stations.ref },
     { value: '156K', label: 'Transactions' },
     { value: '24/7', label: 'Support' },
   ];
@@ -152,7 +156,8 @@ export default function Landing() {
         <div className="header-container">
           <motion.div 
             className="header-logo"
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.05 }}
+            transition={smoothEase}
           >
             <div className="logo-icon">
               <Fuel size={20} />
@@ -175,14 +180,15 @@ export default function Landing() {
 
         <motion.div 
           className="hero-content"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
         >
           <motion.div 
             className="hero-badge"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            variants={scaleIn}
+            initial="hidden"
+            animate="visible"
             transition={{ delay: 0.2 }}
           >
             <Sparkles size={14} />
@@ -197,8 +203,9 @@ export default function Landing() {
           
           <motion.p 
             className="hero-subtitle"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            variants={fadeIn}
+            initial="hidden"
+            animate="visible"
             transition={{ delay: 0.3 }}
           >
             The complete digital solution for fuel distribution management in Ethiopia. 
@@ -207,15 +214,15 @@ export default function Landing() {
           
           <motion.div 
             className="hero-actions"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
             transition={{ delay: 0.4 }}
           >
             <motion.button 
               className="btn-primary"
               onClick={handleSignupClick}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              {...buttonHover}
             >
               <span>Get Started</span>
               <ChevronRight size={18} />
@@ -223,16 +230,14 @@ export default function Landing() {
             <motion.button 
               className="btn-secondary"
               onClick={handleLoginClick}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              {...buttonHover}
             >
               <span>Sign In</span>
             </motion.button>
             <motion.button 
               className="btn-ghost"
               onClick={() => setPage('features')}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              {...buttonHover}
             >
               <span>Learn More</span>
             </motion.button>
@@ -241,19 +246,22 @@ export default function Landing() {
 
         <motion.div 
           className="hero-stats"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
+          ref={statsRef}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.6 }}
         >
           {stats.map((stat, index) => (
             <motion.div 
               key={index} 
               className="hero-stat"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              variants={fadeUp}
+              initial="hidden"
+              animate="visible"
               transition={{ delay: 0.7 + index * 0.1 }}
             >
-              <span className="stat-number">{stat.value}</span>
+              <span className="stat-number" ref={stat.ref || null}>{stat.value}</span>
               <span className="stat-label">{stat.label}</span>
             </motion.div>
           ))}
@@ -262,15 +270,17 @@ export default function Landing() {
 
       <section className="section-header">
         <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
         >
           Omni-Channel Access
         </motion.h2>
         <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          variants={fadeIn}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
         >
@@ -278,16 +288,20 @@ export default function Landing() {
         </motion.p>
       </section>
 
-      <section className="features">
-        <div className="features-grid">
+      <section className="features" ref={featuresRef}>
+        <motion.div 
+          className="features-grid"
+          variants={staggerContainer(0.12)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           {features.map((feature, index) => (
             <motion.div
               key={index}
               className="feature-card"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              variants={fadeUp}
+              {...cardHoverLift}
             >
               <div 
                 className="feature-icon"
@@ -302,35 +316,41 @@ export default function Landing() {
               <p>{feature.description}</p>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       <section className="testimonials">
         <div className="section-header">
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
             viewport={{ once: true }}
           >
             Trusted by Thousands
           </motion.h2>
           <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            variants={fadeIn}
+            initial="hidden"
+            whileInView="visible"
             viewport={{ once: true }}
           >
             Hear from our community of drivers, fleet owners, and station managers
           </motion.p>
         </div>
-        <div className="testimonials-grid">
+        <motion.div 
+          className="testimonials-grid"
+          variants={staggerContainer(0.12)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           {testimonials.map((t, i) => (
             <motion.div
               key={i}
               className="testimonial-card"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
+              variants={fadeUp}
+              {...cardHoverLift}
             >
               <div className="testimonial-stars">
                 {Array.from({ length: t.rating }).map((_, j) => (
@@ -349,20 +369,22 @@ export default function Landing() {
               </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       <section className="section-header">
         <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
         >
           Deep Solutions
         </motion.h2>
         <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          variants={fadeIn}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
         >
           Address the core problems of corruption, congestion, and financial leakage
@@ -370,15 +392,19 @@ export default function Landing() {
       </section>
 
       <section className="solutions">
-        <div className="solutions-grid">
+        <motion.div 
+          className="solutions-grid"
+          variants={staggerContainer(0.1)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           {solutions.map((solution, index) => (
             <motion.div
               key={index}
               className="solution-card"
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              variants={scaleIn}
+              {...cardHoverScale}
             >
               <div className="solution-header">
                 <solution.icon size={22} />
@@ -390,20 +416,22 @@ export default function Landing() {
               <p>{solution.description}</p>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       <section className="section-header">
         <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
         >
           Protocol
         </motion.h2>
         <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          variants={fadeIn}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
         >
           Specialized security measures for different vehicle types
@@ -411,12 +439,17 @@ export default function Landing() {
       </section>
 
       <section className="protocol">
-        <div className="protocol-grid">
+        <motion.div 
+          className="protocol-grid"
+          variants={staggerContainer(0.12)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           <motion.div 
             className="protocol-card green"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            variants={fadeUp}
+            {...cardHoverLift}
           >
             <div className="protocol-icon">
               <Fuel size={28} />
@@ -426,10 +459,8 @@ export default function Landing() {
           </motion.div>
           <motion.div 
             className="protocol-card blue"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
+            variants={fadeUp}
+            {...cardHoverLift}
           >
             <div className="protocol-icon">
               <Fuel size={28} />
@@ -439,10 +470,8 @@ export default function Landing() {
           </motion.div>
           <motion.div 
             className="protocol-card black"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
+            variants={fadeUp}
+            {...cardHoverLift}
           >
             <div className="protocol-icon">
               <Fuel size={28} />
@@ -450,48 +479,59 @@ export default function Landing() {
             <h3>Black QR</h3>
             <p>Heavy Truck · Up to 500L</p>
           </motion.div>
-        </div>
+        </motion.div>
       </section>
 
       <section className="faq-section">
         <div className="section-header">
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
             viewport={{ once: true }}
           >
             Frequently Asked Questions
           </motion.h2>
           <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            variants={fadeIn}
+            initial="hidden"
+            whileInView="visible"
             viewport={{ once: true }}
           >
             Everything you need to know about VeloCity
           </motion.p>
         </div>
-        <div className="faq-container">
+        <motion.div 
+          className="faq-container"
+          variants={staggerContainer(0.06)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           {faqs.map((faq, i) => (
             <motion.div
               key={i}
               className={`faq-item ${openFaq === i ? 'open' : ''}`}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
+              variants={fadeUp}
             >
               <button className="faq-question" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
                 <span>{faq.q}</span>
-                <ChevronDown size={20} className={`faq-arrow ${openFaq === i ? 'rotated' : ''}`} />
+                <motion.span
+                  style={{ display: 'flex' }}
+                  animate={{ rotate: openFaq === i ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ChevronDown size={20} />
+                </motion.span>
               </button>
               <AnimatePresence>
                 {openFaq === i && (
                   <motion.div
                     className="faq-answer"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    variants={accordionContent}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
                   >
                     <p>{faq.a}</p>
                   </motion.div>
@@ -499,14 +539,15 @@ export default function Landing() {
               </AnimatePresence>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       <section className="cta-section">
         <motion.div
           className="cta-content"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
         >
           <h2>Ready to Transform Fuel Distribution?</h2>

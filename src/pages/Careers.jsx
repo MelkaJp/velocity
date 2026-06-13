@@ -3,6 +3,7 @@ import { useTranslation } from '../context/TranslationContext';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { Briefcase, MapPin, Clock, DollarSign, Send, CheckCircle, ArrowLeft, Home } from 'lucide-react';
+import { fadeUp, fadeIn, staggerContainer, cardHoverLift } from '../animations';
 import './InfoPage.css';
 
 export default function Careers() {
@@ -80,14 +81,16 @@ export default function Careers() {
       </div>
       <div className="info-hero">
         <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
         >
           Careers
         </motion.h1>
         <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
           transition={{ delay: 0.2 }}
         >
           Join our team and help transform fuel distribution in Ethiopia
@@ -117,14 +120,19 @@ export default function Careers() {
         </p>
       </div>
 
-      <div className="jobs-list">
+      <motion.div 
+        className="jobs-list"
+        variants={staggerContainer(0.08)}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
         {openings.map((job, index) => (
           <motion.div 
             key={index}
             className="job-card"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            variants={fadeUp}
+            {...cardHoverLift}
           >
             <div className="job-header">
               <h3>{job.title}</h3>
@@ -141,7 +149,7 @@ export default function Careers() {
             </button>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <div className="info-section">
         <h2>Don't see the right role?</h2>

@@ -2,6 +2,7 @@ import { useTranslation } from '../context/TranslationContext';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { Fuel, MapPin, Phone, Mail, Clock, Shield, Zap, Users, ArrowLeft, Home } from 'lucide-react';
+import { fadeUp, fadeIn, staggerContainer, scaleIn } from '../animations';
 import './InfoPage.css';
 
 export default function About() {
@@ -30,14 +31,16 @@ export default function About() {
       </div>
       <div className="info-hero">
         <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
         >
           About VeloCity
         </motion.h1>
         <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
           transition={{ delay: 0.2 }}
         >
           Ethiopia's complete fuel distribution management ecosystem
@@ -53,40 +56,46 @@ export default function About() {
         </p>
       </div>
 
-      <div className="info-stats">
+      <motion.div 
+        className="info-stats"
+        variants={staggerContainer(0.12)}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
         {stats.map((stat, index) => (
           <motion.div 
             key={index}
             className="stat-box"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            viewport={{ once: true }}
+            variants={fadeUp}
           >
             <span className="stat-value">{stat.value}</span>
             <span className="stat-label">{stat.label}</span>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <div className="info-section">
         <h2>Key Features</h2>
-        <div className="features-grid">
+        <motion.div 
+          className="features-grid"
+          variants={staggerContainer(0.1)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           {features.map((feature, index) => (
             <motion.div 
               key={index}
               className="feature-item"
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.1 }}
-              viewport={{ once: true }}
+              variants={scaleIn}
             >
               <feature.icon size={24} />
               <h3>{feature.title}</h3>
               <p>{feature.desc}</p>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       <div className="info-section">

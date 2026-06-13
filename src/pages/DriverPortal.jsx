@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
+import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { QRCodeSVG } from 'qrcode.react';
 import { 
   Plus, 
@@ -283,13 +284,13 @@ export default function DriverPortal() {
             animate={{ opacity: 1, x: 0 }}
           >
             <h2>My Vehicles</h2>
-            <div className="vehicles-grid">
+            <motion.div className="vehicles-grid" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
               {myVehicles.length === 0 ? (
-                <div className="empty-state">
+                <motion.div className="empty-state" variants={fadeUp}>
                   <Car size={48} />
                   <p>No vehicles registered yet</p>
                   <button onClick={() => setActiveTab('register')}>Register Your First Vehicle</button>
-                </div>
+                </motion.div>
               ) : (
                 myVehicles.map(vehicle => {
                   const TypeIcon = getTypeIcon(vehicle.type);
@@ -298,7 +299,8 @@ export default function DriverPortal() {
                     <motion.div 
                       key={vehicle.id}
                       className="vehicle-card"
-                      whileHover={{ y: -4 }}
+                      variants={fadeUp}
+                      {...cardHoverLift}
                       style={{ borderColor: typeColor }}
                     >
                       <div className="vehicle-header">
@@ -335,7 +337,7 @@ export default function DriverPortal() {
                   );
                 })
               )}
-            </div>
+            </motion.div>
           </motion.div>
         )}
 
@@ -401,15 +403,15 @@ export default function DriverPortal() {
             animate={{ opacity: 1, x: 0 }}
           >
             <h2>Transaction History</h2>
-            <div className="transactions-list">
+            <motion.div className="transactions-list" variants={staggerContainer(0.08)} initial="hidden" animate="visible">
               {myTransactions.length === 0 ? (
-                <div className="empty-state">
+                <motion.div className="empty-state" variants={fadeUp}>
                   <History size={48} />
                   <p>No transactions yet</p>
-                </div>
+                </motion.div>
               ) : (
                 myTransactions.map(tx => (
-                  <div key={tx.id} className={`transaction-card ${tx.status}`}>
+                  <motion.div key={tx.id} className={`transaction-card ${tx.status}`} variants={fadeUp} {...cardHoverLift}>
                     <div className="tx-main">
                       <div className="tx-icon">
                         <MapPin size={20} />
@@ -435,10 +437,10 @@ export default function DriverPortal() {
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))
               )}
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </div>

@@ -3,6 +3,7 @@ import { useTranslation } from '../context/TranslationContext';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { Cookie, Settings, Bell, Eye, XCircle, CheckCircle, ArrowLeft, Home } from 'lucide-react';
+import { fadeUp, fadeIn, staggerContainer, cardHoverLift } from '../animations';
 import './InfoPage.css';
 
 export default function Cookies() {
@@ -76,14 +77,16 @@ Please note that removing cookies may affect platform functionality.`
       </div>
       <div className="info-hero">
         <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
         >
           Cookie Policy
         </motion.h1>
         <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
           transition={{ delay: 0.2 }}
         >
           How we use cookies to improve your experience
@@ -99,9 +102,15 @@ Please note that removing cookies may affect platform functionality.`
 
       <div className="info-section">
         <h2>Types of Cookies We Use</h2>
-        <div className="cookies-grid">
+        <motion.div 
+          className="cookies-grid"
+          variants={staggerContainer(0.1)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           {cookieTypes.map((cookie, index) => (
-            <div key={index} className="cookie-card">
+            <motion.div key={index} className="cookie-card" variants={fadeUp} {...cardHoverLift}>
               <div className="cookie-header">
                 <h3>{cookie.name}</h3>
                 {cookie.required ? (
@@ -112,9 +121,9 @@ Please note that removing cookies may affect platform functionality.`
               </div>
               <p>{cookie.description}</p>
               <span className="cookie-examples">{cookie.examples}</span>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {sections.map((section, index) => (

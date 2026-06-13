@@ -2,6 +2,7 @@ import { useTranslation } from '../context/TranslationContext';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { Shield, Eye, Lock, User, Database, Bell, Mail, Trash2, ArrowLeft, Home } from 'lucide-react';
+import { fadeUp, fadeIn } from '../animations';
 import './InfoPage.css';
 
 export default function Privacy() {
@@ -76,14 +77,16 @@ We do NOT sell your personal information to third parties.`
       </div>
       <div className="info-hero">
         <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
         >
           Privacy Policy
         </motion.h1>
         <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
           transition={{ delay: 0.2 }}
         >
           Your privacy is important to us

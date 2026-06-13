@@ -2,6 +2,7 @@ import { useTranslation } from '../context/TranslationContext';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { FileText, AlertTriangle, Shield, User, Car, Fuel, Mail, ArrowLeft, Home } from 'lucide-react';
+import { fadeUp, fadeIn } from '../animations';
 import './InfoPage.css';
 
 export default function Terms() {
@@ -99,14 +100,16 @@ means you accept the new terms. We will notify users of significant changes via 
       </div>
       <div className="info-hero">
         <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
         >
           Terms of Service
         </motion.h1>
         <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
           transition={{ delay: 0.2 }}
         >
           Rules and guidelines for using VeloCity

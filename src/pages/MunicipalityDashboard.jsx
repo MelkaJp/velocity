@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
 import { motion } from 'framer-motion';
+import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
   Building2, 
   MapPin, 
@@ -125,9 +126,9 @@ export default function MunicipalityDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <div className="stats-grid">
+            <motion.div className="stats-grid" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
               {stats.map((stat, index) => (
-                <div key={index} className="stat-card">
+                <motion.div key={index} className="stat-card" variants={fadeUp} {...cardHoverLift}>
                   <div className="stat-icon" style={{ background: `${stat.color}20`, color: stat.color }}>
                     <stat.icon size={24} />
                   </div>
@@ -136,9 +137,9 @@ export default function MunicipalityDashboard() {
                     <span className="stat-label">{stat.label}</span>
                   </div>
                   <span className="stat-change positive">{stat.change}</span>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
 
             <div className="dashboard-panels">
               <div className="panel revenue-panel">
@@ -211,9 +212,9 @@ export default function MunicipalityDashboard() {
                 <button className="btn-link" onClick={() => setActiveTab('stations')}>Manage</button>
               </div>
               <div className="panel-content">
-                <div className="station-grid">
+                <motion.div className="station-grid" variants={staggerContainer(0.08)} initial="hidden" animate="visible">
                   {stations.slice(0, 6).map(station => (
-                    <div key={station.id} className="station-card">
+                    <motion.div key={station.id} className="station-card" variants={fadeUp} {...cardHoverLift}>
                       <div className="station-header">
                         <span className="station-name">{station.name}</span>
                         <span className={`status-badge ${station.status}`}>{station.status}</span>
@@ -228,9 +229,9 @@ export default function MunicipalityDashboard() {
                           <span className="stat-label">Workers</span>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </div>
             </div>
           </motion.div>
@@ -347,32 +348,32 @@ export default function MunicipalityDashboard() {
                 <h3>Reports</h3>
               </div>
               <div className="panel-content">
-                <div className="reports-grid">
-                  <div className="report-card">
+                <motion.div className="reports-grid" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
+                  <motion.div className="report-card" variants={fadeUp} {...cardHoverLift}>
                     <BarChart3 size={32} />
                     <h4>Revenue Summary</h4>
                     <p>Daily and monthly revenue breakdown by station</p>
                     <button className="btn-secondary" onClick={() => alert('Revenue Summary report generated! Check downloads.')}>Generate</button>
-                  </div>
-                  <div className="report-card">
+                  </motion.div>
+                  <motion.div className="report-card" variants={fadeUp} {...cardHoverLift}>
                     <Car size={32} />
                     <h4>Vehicle Registration</h4>
                     <p>New vehicles registered in the period</p>
                     <button className="btn-secondary" onClick={() => alert('Vehicle Registration report generated! Check downloads.')}>Generate</button>
-                  </div>
-                  <div className="report-card">
+                  </motion.div>
+                  <motion.div className="report-card" variants={fadeUp} {...cardHoverLift}>
                     <Truck size={32} />
                     <h4>Vehicle Type Analysis</h4>
                     <p>Distribution of vehicle types (Green/Blue/Black QR)</p>
                     <button className="btn-secondary" onClick={() => alert('Vehicle Type Analysis report generated! Check downloads.')}>Generate</button>
-                  </div>
-                  <div className="report-card">
+                  </motion.div>
+                  <motion.div className="report-card" variants={fadeUp} {...cardHoverLift}>
                     <Wallet size={32} />
                     <h4>Settlement Report</h4>
                     <p>70/30 revenue split calculations</p>
 <button className="btn-secondary" onClick={() => alert('Settlement report generated! Check downloads.')}>Generate</button>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
               </div>
             </div>
           </motion.div>

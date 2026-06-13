@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
+import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
   Building2, 
   Shield, 
@@ -116,8 +117,8 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <div className="stats-grid-admin">
-              <div className="stat-card-admin primary">
+            <motion.div className="stats-grid-admin" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
+              <motion.div className="stat-card-admin primary" variants={fadeUp} {...cardHoverLift}>
                 <div className="stat-icon-bg">
                   <DollarSign size={32} />
                 </div>
@@ -129,9 +130,9 @@ export default function AdminDashboard() {
                   <TrendingUp size={16} />
                   +12.5%
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="stat-card-admin">
+              <motion.div className="stat-card-admin" variants={fadeUp} {...cardHoverLift}>
                 <div className="stat-icon-bg green">
                   <Building2 size={32} />
                 </div>
@@ -139,9 +140,9 @@ export default function AdminDashboard() {
                   <span className="stat-value">${municipalShare.toLocaleString()}</span>
                   <span className="stat-label">Municipality Share (70%)</span>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="stat-card-admin">
+              <motion.div className="stat-card-admin" variants={fadeUp} {...cardHoverLift}>
                 <div className="stat-icon-bg blue">
                   <Activity size={32} />
                 </div>
@@ -149,9 +150,9 @@ export default function AdminDashboard() {
                   <span className="stat-value">{state.stats.litersTracked.toLocaleString()}L</span>
                   <span className="stat-label">Total Liters Tracked</span>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="stat-card-admin warning">
+              <motion.div className="stat-card-admin warning" variants={fadeUp} {...cardHoverLift}>
                 <div className="stat-icon-bg warning">
                   <AlertTriangle size={32} />
                 </div>
@@ -162,8 +163,8 @@ export default function AdminDashboard() {
                 <div className="stat-trend down">
                   -3 from yesterday
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
             <div className="main-chart">
               <div className="chart-header">
@@ -206,36 +207,36 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="quick-stats-row">
-              <div className="quick-stat">
+            <motion.div className="quick-stats-row" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
+              <motion.div className="quick-stat" variants={fadeUp} {...cardHoverLift}>
                 <Fuel size={20} />
                 <div>
                   <span className="value">{state.stats.stationsActive}</span>
                   <span className="label">Active Stations</span>
                 </div>
-              </div>
-              <div className="quick-stat">
+              </motion.div>
+              <motion.div className="quick-stat" variants={fadeUp} {...cardHoverLift}>
                 <CheckCircle size={20} />
                 <div>
                   <span className="value">{state.stats.vehiclesRegistered}</span>
                   <span className="label">Registered Vehicles</span>
                 </div>
-              </div>
-              <div className="quick-stat">
+              </motion.div>
+              <motion.div className="quick-stat" variants={fadeUp} {...cardHoverLift}>
                 <AlertTriangle size={20} />
                 <div>
                   <span className="value">{avgGhostGap}%</span>
                   <span className="label">Avg Ghost Gap</span>
                 </div>
-              </div>
-              <div className="quick-stat">
+              </motion.div>
+              <motion.div className="quick-stat" variants={fadeUp} {...cardHoverLift}>
                 <XCircle size={20} />
                 <div>
                   <span className="value">98.2%</span>
                   <span className="label">System Integrity</span>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </motion.div>
         )}
 
@@ -349,9 +350,9 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <div className="station-map-grid">
+            <motion.div className="station-map-grid" variants={staggerContainer(0.08)} initial="hidden" animate="visible">
               {stationPerformance.map(station => (
-                <div key={station.id} className={`station-card ${station.status}`}>
+                <motion.div key={station.id} className={`station-card ${station.status}`} variants={fadeUp} {...cardHoverLift}>
                   <div className="station-header">
                     <h4>{station.name}</h4>
                     <span className={`status-badge ${station.status}`}>
@@ -377,11 +378,11 @@ export default function AdminDashboard() {
                       }}
                     ></div>
                   </div>
-                </div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </motion.div>
 
-            <div className="inventory-panel">
+              <div className="inventory-panel">
               <h3>Station Inventory Levels</h3>
               <div className="inventory-bars">
                 {state.stations.map(station => {
@@ -430,9 +431,9 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="anomaly-list">
+              <motion.div className="anomaly-list" variants={staggerContainer(0.08)} initial="hidden" animate="visible">
                 {anomalyLog.map(anomaly => (
-                  <div key={anomaly.id} className={`anomaly-card ${anomaly.status}`}>
+                  <motion.div key={anomaly.id} className={`anomaly-card ${anomaly.status}`} variants={fadeUp} {...cardHoverLift}>
                     <div className="anomaly-header">
                       <div className="anomaly-icon">
                         {anomaly.type === 'capacity_exceeded' && <AlertTriangle size={20} />}
@@ -458,9 +459,9 @@ export default function AdminDashboard() {
                         Investigate
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             </div>
 
             <div className="ghost-gap-panel">

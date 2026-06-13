@@ -2,6 +2,7 @@ import { useTranslation } from '../context/TranslationContext';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { Fuel, Check, X, Star, Users, Building2, MapPin, ArrowLeft, Home } from 'lucide-react';
+import { fadeUp, fadeIn, staggerContainer, cardHoverLift } from '../animations';
 import './InfoPage.css';
 
 export default function Pricing() {
@@ -96,14 +97,16 @@ export default function Pricing() {
       </div>
       <div className="info-hero">
         <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
         >
           {t('pricing', 'Pricing')}
         </motion.h1>
         <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
           transition={{ delay: 0.2 }}
         >
           {t('pricingSubtitle', 'Simple, transparent pricing for everyone')}
@@ -117,14 +120,19 @@ export default function Pricing() {
         </p>
       </div>
 
-      <div className="pricing-grid">
+      <motion.div 
+        className="pricing-grid"
+        variants={staggerContainer(0.1)}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
         {plans.map((plan, index) => (
           <motion.div 
             key={index}
             className={`pricing-card ${plan.popular ? 'popular' : ''}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            variants={fadeUp}
+            {...cardHoverLift}
           >
             {plan.popular && <div className="popular-badge">Most Popular</div>}
             <div className="pricing-icon" style={{ backgroundColor: `${plan.color}20`, color: plan.color }}>
@@ -153,7 +161,7 @@ export default function Pricing() {
             </button>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <div className="info-section">
         <h2>Frequently Asked Questions</h2>

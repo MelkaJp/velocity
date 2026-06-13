@@ -2,6 +2,7 @@ import { useTranslation } from '../context/TranslationContext';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { Fuel, QrCode, Smartphone, Shield, MapPin, Clock, Zap, Users, Wallet, Bell, BarChart3, Star, ArrowLeft, Home } from 'lucide-react';
+import { fadeUp, fadeIn, staggerContainer, scaleIn, cardHoverLift } from '../animations';
 import './InfoPage.css';
 
 export default function Features() {
@@ -91,14 +92,16 @@ export default function Features() {
       </div>
       <div className="info-hero">
         <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
         >
           Features
         </motion.h1>
         <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
           transition={{ delay: 0.2 }}
         >
           Complete fuel management solution with cutting-edge technology
@@ -113,14 +116,19 @@ export default function Features() {
         </p>
       </div>
 
-      <div className="features-grid">
+      <motion.div 
+        className="features-grid"
+        variants={staggerContainer(0.08)}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
         {features.map((feature, index) => (
           <motion.div 
             key={index}
             className="feature-card"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            variants={fadeUp}
+            {...cardHoverLift}
           >
             <div className="feature-icon" style={{ backgroundColor: `${feature.color}20`, color: feature.color }}>
               <feature.icon size={28} />
@@ -129,32 +137,38 @@ export default function Features() {
             <p>{feature.description}</p>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <div className="info-section">
         <h2>Who is it for?</h2>
-        <div className="audience-cards">
-          <div className="audience-card">
+        <motion.div 
+          className="audience-cards"
+          variants={staggerContainer(0.1)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <motion.div className="audience-card" variants={fadeUp} {...cardHoverLift}>
             <Users size={32} />
             <h3>Drivers</h3>
             <p>Register your vehicle, book fuel slots, and track your fuel usage with instant SMS notifications.</p>
-          </div>
-          <div className="audience-card">
+          </motion.div>
+          <motion.div className="audience-card" variants={fadeUp} {...cardHoverLift}>
             <Wallet size={32} />
             <h3>Fleet Owners</h3>
             <p>Manage multiple vehicles, track all transactions, and manage your fleet from one dashboard.</p>
-          </div>
-          <div className="audience-card">
+          </motion.div>
+          <motion.div className="audience-card" variants={fadeUp} {...cardHoverLift}>
             <MapPin size={32} />
             <h3>Station Managers</h3>
             <p>Track fuel inventory, manage workers, view sales analytics, and optimize operations.</p>
-          </div>
-          <div className="audience-card">
+          </motion.div>
+          <motion.div className="audience-card" variants={fadeUp} {...cardHoverLift}>
             <BarChart3 size={32} />
             <h3>Administrators</h3>
             <p>Oversee all stations, manage municipalities, monitor transactions, and ensure compliance.</p>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

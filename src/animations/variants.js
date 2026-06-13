@@ -1,5 +1,3 @@
-import { Variants, Transition } from 'framer-motion';
-
 // ──────────────────────────────────────────
 // Transitions
 // ──────────────────────────────────────────

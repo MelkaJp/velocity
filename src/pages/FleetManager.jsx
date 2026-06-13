@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
 import { motion } from 'framer-motion';
+import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
   Users, 
   Truck, 
@@ -153,8 +154,8 @@ export default function FleetManager() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <div className="stats-row">
-              <div className="stat-card-large">
+            <motion.div className="stats-row" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
+              <motion.div className="stat-card-large" variants={fadeUp} {...cardHoverLift}>
                 <div className="stat-icon-wrap">
                   <Users size={28} />
                 </div>
@@ -162,8 +163,8 @@ export default function FleetManager() {
                   <span className="stat-value">{fleetVehicles.length}</span>
                   <span className="stat-label">Total Vehicles</span>
                 </div>
-              </div>
-              <div className="stat-card-large">
+              </motion.div>
+              <motion.div className="stat-card-large" variants={fadeUp} {...cardHoverLift}>
                 <div className="stat-icon-wrap success">
                   <TrendingUp size={28} />
                 </div>
@@ -171,8 +172,8 @@ export default function FleetManager() {
                   <span className="stat-value">{activeVehicles}</span>
                   <span className="stat-label">Active</span>
                 </div>
-              </div>
-              <div className="stat-card-large">
+              </motion.div>
+              <motion.div className="stat-card-large" variants={fadeUp} {...cardHoverLift}>
                 <div className="stat-icon-wrap warning">
                   <Truck size={28} />
                 </div>
@@ -180,8 +181,8 @@ export default function FleetManager() {
                   <span className="stat-value">{fleetVehicles.filter(v => v.type === 'truck').length}</span>
                   <span className="stat-label">Trucks</span>
                 </div>
-              </div>
-              <div className="stat-card-large">
+              </motion.div>
+              <motion.div className="stat-card-large" variants={fadeUp} {...cardHoverLift}>
                 <div className="stat-icon-wrap blue">
                   <DollarSign size={28} />
                 </div>
@@ -189,21 +190,21 @@ export default function FleetManager() {
                   <span className="stat-value">{formatCurrency(totalFleetValue)}</span>
                   <span className="stat-label">Total Wallet</span>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
-            <div className="cost-summary">
-              <div className="cost-card">
+            <motion.div className="cost-summary" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
+              <motion.div className="cost-card" variants={fadeUp} {...cardHoverLift}>
                 <h4>Weekly Spend</h4>
                 <p className="cost-value">{formatCurrency(weeklySpend)}</p>
                 <p className="cost-usd">≈ ${weeklySpendUSD}</p>
-              </div>
-              <div className="cost-card">
+              </motion.div>
+              <motion.div className="cost-card" variants={fadeUp} {...cardHoverLift}>
                 <h4>Monthly Spend</h4>
                 <p className="cost-value">{formatCurrency(monthlySpend)}</p>
                 <p className="cost-usd">≈ ${monthlySpendUSD}</p>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
             <div className="charts-row">
               <div className="chart-card">
@@ -379,29 +380,29 @@ export default function FleetManager() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <div className="cost-summary">
-              <div className="cost-card">
+            <motion.div className="cost-summary" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
+              <motion.div className="cost-card" variants={fadeUp} {...cardHoverLift}>
                 <DollarSign size={24} />
                 <div className="cost-info">
                   <span className="cost-value">${(avgCostPerVehicle * 30).toLocaleString()}</span>
                   <span className="cost-label">Monthly Cost</span>
                 </div>
-              </div>
-              <div className="cost-card">
+              </motion.div>
+              <motion.div className="cost-card" variants={fadeUp} {...cardHoverLift}>
                 <TrendingUp size={24} />
                 <div className="cost-info">
                   <span className="cost-value">$2.50/L</span>
                   <span className="cost-label">Avg. Fuel Price</span>
                 </div>
-              </div>
-              <div className="cost-card">
+              </motion.div>
+              <motion.div className="cost-card" variants={fadeUp} {...cardHoverLift}>
                 <PieChart size={24} />
                 <div className="cost-info">
                   <span className="cost-value">{fleetVehicles.length * 8}</span>
                   <span className="cost-label">Avg. Refills/Month</span>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
             <div className="cost-breakdown">
               <h3>Cost Breakdown by Vehicle Type</h3>
@@ -462,8 +463,8 @@ export default function FleetManager() {
 
             <div className="subscription-panel">
               <h3>Subscription Management</h3>
-              <div className="sub-options">
-                <div className="sub-card active">
+              <motion.div className="sub-options" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
+                <motion.div className="sub-card active" variants={fadeUp} {...cardHoverLift}>
                   <div className="sub-header">
                     <h4>Premium</h4>
                     <span className="price">$99/mo</span>
@@ -475,8 +476,8 @@ export default function FleetManager() {
                     <li>Advanced analytics</li>
                   </ul>
                   <button className="btn-sub" onClick={() => alert('You are already on the Premium plan.')}>Current Plan</button>
-                </div>
-                <div className="sub-card">
+                </motion.div>
+                <motion.div className="sub-card" variants={fadeUp} {...cardHoverLift}>
                   <div className="sub-header">
                     <h4>Basic</h4>
                     <span className="price">$49/mo</span>
@@ -487,8 +488,8 @@ export default function FleetManager() {
                     <li>Email support</li>
                   </ul>
                   <button className="btn-sub outline" onClick={() => { const c = confirm('Upgrade to Basic for $49/mo?'); if (c) alert('Upgraded to Basic plan!'); }}>Upgrade</button>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </div>
           </motion.div>
         )}

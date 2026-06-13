@@ -2,6 +2,7 @@ import { useTranslation } from '../context/TranslationContext';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Eye, Server, Database, Key, Bell, UserCheck, QrCode, AlertTriangle, CheckCircle, ArrowLeft, Home } from 'lucide-react';
+import { fadeUp, fadeIn, staggerContainer, scaleIn, cardHoverLift } from '../animations';
 import './InfoPage.css';
 
 export default function Security() {
@@ -64,14 +65,16 @@ export default function Security() {
       </div>
       <div className="info-hero">
         <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
         >
           Security
         </motion.h1>
         <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
           transition={{ delay: 0.2 }}
         >
           Enterprise-grade security to protect every transaction
@@ -86,14 +89,19 @@ export default function Security() {
         </p>
       </div>
 
-      <div className="features-grid">
+      <motion.div 
+        className="features-grid"
+        variants={staggerContainer(0.1)}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
         {securityFeatures.map((feature, index) => (
           <motion.div 
             key={index}
             className="feature-card"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            variants={scaleIn}
+            {...cardHoverLift}
           >
             <div className="feature-icon" style={{ backgroundColor: `${feature.color}20`, color: feature.color }}>
               <feature.icon size={28} />
@@ -102,7 +110,7 @@ export default function Security() {
             <p>{feature.description}</p>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <div className="info-section">
         <h2>Fraud Prevention</h2>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
 import { motion } from 'framer-motion';
+import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
   MapPin, 
   Users, 
@@ -103,9 +104,9 @@ export default function StationManagerDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <div className="stats-grid">
+            <motion.div className="stats-grid" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
               {stats.map((stat, index) => (
-                <div key={index} className="stat-card">
+                <motion.div key={index} className="stat-card" variants={fadeUp} {...cardHoverLift}>
                   <div className="stat-icon">
                     <stat.icon size={24} />
                   </div>
@@ -114,9 +115,9 @@ export default function StationManagerDashboard() {
                     <span className="stat-label">{stat.label}</span>
                   </div>
                   <span className="stat-change positive">{stat.change}</span>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
 
             <div className="dashboard-panels">
               <div className="panel">
@@ -164,8 +165,9 @@ export default function StationManagerDashboard() {
                   <button className="btn-link" onClick={() => setActiveTab('inventory')}>Manage</button>
                 </div>
                 <div className="panel-content">
+                  <motion.div variants={staggerContainer(0.05)} initial="hidden" animate="visible">
                   {inventory.map((inv, index) => (
-                    <div key={index} className="inventory-item">
+                    <motion.div key={index} className="inventory-item" variants={fadeUp} {...cardHoverLift}>
                       <div className="inventory-header">
                         <span className="inventory-type">{inv.type}</span>
                         <span className="inventory-percent">{Math.round((inv.used / inv.capacity) * 100)}%</span>
@@ -180,8 +182,9 @@ export default function StationManagerDashboard() {
                         ></div>
                       </div>
                       <span className="inventory-text">{inv.used.toLocaleString()} / {inv.capacity.toLocaleString()}L</span>
-                    </div>
+                    </motion.div>
                   ))}
+                  </motion.div>
                 </div>
               </div>
             </div>
@@ -192,9 +195,9 @@ export default function StationManagerDashboard() {
                 <button className="btn-link" onClick={() => setActiveTab('workers')}>Manage</button>
               </div>
               <div className="panel-content">
-                <div className="workers-grid">
+                <motion.div className="workers-grid" variants={staggerContainer(0.08)} initial="hidden" animate="visible">
                   {workers.map(worker => (
-                    <div key={worker.id} className="worker-card">
+                    <motion.div key={worker.id} className="worker-card" variants={fadeUp} {...cardHoverLift}>
                       <div className="worker-avatar">
                         <span>{worker.name.split(' ').map(n => n[0]).join('')}</span>
                       </div>
@@ -205,9 +208,9 @@ export default function StationManagerDashboard() {
                       <span className={`status-badge ${worker.status}`}>
                         {worker.status === 'active' ? 'Active' : 'Off'}
                       </span>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </div>
             </div>
           </motion.div>
@@ -341,8 +344,9 @@ export default function StationManagerDashboard() {
                 </button>
               </div>
               <div className="panel-content">
+                <motion.div variants={staggerContainer(0.08)} initial="hidden" animate="visible">
                 {inventory.map((inv, index) => (
-                  <div key={index} className="inventory-card">
+                  <motion.div key={index} className="inventory-card" variants={fadeUp} {...cardHoverLift}>
                     <div className="inventory-header">
                       <div className="inventory-type">
                         <Fuel size={24} />
@@ -375,8 +379,9 @@ export default function StationManagerDashboard() {
                         }}
                       ></div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
+                </motion.div>
               </div>
             </div>
           </motion.div>
