@@ -53,11 +53,30 @@ function VeloCityApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifModalOpen, setNotifModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [deviceScale, setDeviceScale] = useState(1);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('velocity_theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    const updateScale = () => {
+      const w = window.innerWidth;
+      const root = document.getElementById('root');
+      if (w < 768) {
+        const s = Math.max(0.35, w / 1440);
+        setDeviceScale(s);
+        root.style.zoom = s;
+      } else {
+        setDeviceScale(1);
+        root.style.zoom = '';
+      }
+    };
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1200);
