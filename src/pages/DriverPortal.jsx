@@ -261,7 +261,13 @@ export default function DriverPortal() {
                 <div className="qr-code-text">
                   <span>{generatedQR.qrCode}</span>
                 </div>
-                <button className="btn-download">
+                <button className="btn-download" onClick={() => {
+                  const blob = new Blob([generatedQR.qrCode], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url; a.download = `velo-qr-${generatedQR.plate}.txt`;
+                  a.click(); URL.revokeObjectURL(url);
+                }}>
                   <Download size={18} />
                   Download QR Code
                 </button>
@@ -351,11 +357,17 @@ export default function DriverPortal() {
                 </div>
               </div>
               <div className="wallet-actions">
-                <button className="btn-wallet">
+                <button className="btn-wallet" onClick={() => {
+                  const amt = prompt('Enter amount to add (USD):');
+                  if (amt) alert(`Added $${amt} to wallet.`);
+                }}>
                   <Plus size={18} />
                   Add Funds
                 </button>
-                <button className="btn-wallet outline">
+                <button className="btn-wallet outline" onClick={() => {
+                  const amt = prompt('Enter amount to transfer:');
+                  if (amt) alert(`Transfer of $${amt} initiated.`);
+                }}>
                   Transfer
                 </button>
               </div>

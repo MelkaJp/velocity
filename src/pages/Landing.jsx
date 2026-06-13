@@ -1,6 +1,6 @@
 import { useVeloCity } from '../context/VeloCityContext';
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Fuel, 
   Shield, 
@@ -16,14 +16,21 @@ import {
   ChevronRight,
   Zap,
   Lock,
-  BarChart3
+  BarChart3,
+  Star,
+  ChevronDown,
+  Phone,
+  Mail,
+  ExternalLink
 } from 'lucide-react';
 import Auth from './Auth';
 import './Landing.css';
 
 export default function Landing() {
+  const { setPage } = useVeloCity();
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState('login');
+  const [openFaq, setOpenFaq] = useState(null);
 
   const handleLoginClick = () => {
     setAuthMode('login');
@@ -102,6 +109,35 @@ export default function Landing() {
       description: 'Volumetric alerts when capacity limits are exceeded.',
       category: 'fraud',
     },
+  ];
+
+  const testimonials = [
+    {
+      name: 'Tadesse A.',
+      role: 'Bajaj Driver',
+      text: 'No more waiting in long queues. I book my slot and get notified when it\'s my turn. Game changer!',
+      rating: 5,
+    },
+    {
+      name: 'Sara M.',
+      role: 'Fleet Owner',
+      text: 'Managing 15 vehicles was a nightmare. Now I track all fuel expenses from my phone in real-time.',
+      rating: 5,
+    },
+    {
+      name: 'Bekele W.',
+      role: 'Station Manager',
+      text: 'The QR verification system eliminated the black market at our station. Revenue is up 30%.',
+      rating: 5,
+    },
+  ];
+
+  const faqs = [
+    { q: 'How do I register my vehicle?', a: 'Click "Get Started" and fill in your details. You will receive a unique QR code for fuel verification.' },
+    { q: 'How do I book a fuel slot?', a: 'After registration, log in to your dashboard and select your preferred station and time slot.' },
+    { q: 'Is the service available across Ethiopia?', a: 'We are expanding rapidly. Currently operational in Addis Ababa and 5 regional capitals.' },
+    { q: 'What if I miss my appointment?', a: 'You can reschedule from your dashboard. Repeated no-shows may affect your booking priority.' },
+    { q: 'How does the revenue sharing work?', a: 'A small percentage of each transaction is automatically distributed to municipalities, stations, and workers.' },
   ];
 
   return (
@@ -192,6 +228,14 @@ export default function Landing() {
             >
               <span>Sign In</span>
             </motion.button>
+            <motion.button 
+              className="btn-ghost"
+              onClick={() => setPage('features')}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <span>Learn More</span>
+            </motion.button>
           </motion.div>
         </motion.div>
 
@@ -214,8 +258,7 @@ export default function Landing() {
             </motion.div>
           ))}
         </motion.div>
-
-        </section>
+      </section>
 
       <section className="section-header">
         <motion.h2
@@ -257,6 +300,53 @@ export default function Landing() {
               </div>
               <h3>{feature.title}</h3>
               <p>{feature.description}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      <section className="testimonials">
+        <div className="section-header">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            Trusted by Thousands
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            Hear from our community of drivers, fleet owners, and station managers
+          </motion.p>
+        </div>
+        <div className="testimonials-grid">
+          {testimonials.map((t, i) => (
+            <motion.div
+              key={i}
+              className="testimonial-card"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+            >
+              <div className="testimonial-stars">
+                {Array.from({ length: t.rating }).map((_, j) => (
+                  <Star key={j} size={16} fill="#fbbf24" color="#fbbf24" />
+                ))}
+              </div>
+              <p className="testimonial-text">"{t.text}"</p>
+              <div className="testimonial-author">
+                <div className="testimonial-avatar">
+                  {t.name.charAt(0)}
+                </div>
+                <div>
+                  <strong>{t.name}</strong>
+                  <span>{t.role}</span>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -363,6 +453,75 @@ export default function Landing() {
         </div>
       </section>
 
+      <section className="faq-section">
+        <div className="section-header">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            Frequently Asked Questions
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            Everything you need to know about VeloCity
+          </motion.p>
+        </div>
+        <div className="faq-container">
+          {faqs.map((faq, i) => (
+            <motion.div
+              key={i}
+              className={`faq-item ${openFaq === i ? 'open' : ''}`}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05 }}
+            >
+              <button className="faq-question" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                <span>{faq.q}</span>
+                <ChevronDown size={20} className={`faq-arrow ${openFaq === i ? 'rotated' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {openFaq === i && (
+                  <motion.div
+                    className="faq-answer"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <p>{faq.a}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      <section className="cta-section">
+        <motion.div
+          className="cta-content"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h2>Ready to Transform Fuel Distribution?</h2>
+          <p>Join thousands of drivers, fleet owners, and station managers already using VeloCity.</p>
+          <div className="cta-actions">
+            <button className="btn-primary" onClick={handleSignupClick}>
+              Get Started <ChevronRight size={18} />
+            </button>
+            <button className="btn-secondary" onClick={() => setPage('contact')}>
+              Contact Sales
+            </button>
+          </div>
+        </motion.div>
+      </section>
+
       <footer className="footer">
         <div className="footer-content">
           <div className="footer-main">
@@ -373,32 +532,42 @@ export default function Landing() {
               <span>VeloCity</span>
             </div>
             <p>The complete digital solution for fuel distribution management in Ethiopia.</p>
+            <div className="footer-contact">
+              <a href="mailto:support@velocity.et"><Mail size={14} /> support@velocity.et</a>
+              <a href="tel:+251912345678"><Phone size={14} /> +251 912 345 678</a>
+            </div>
           </div>
           
           <div className="footer-links-grid">
             <div className="footer-col">
               <h4>Product</h4>
-              <a href="#">Features</a>
-              <a href="#">Security</a>
-              <a href="#">Pricing</a>
+              <button onClick={() => setPage('features')}>Features</button>
+              <button onClick={() => setPage('security')}>Security</button>
+              <button onClick={() => setPage('pricing')}>Pricing</button>
             </div>
             <div className="footer-col">
               <h4>Company</h4>
-              <a href="#">About</a>
-              <a href="#">Contact</a>
-              <a href="#">Careers</a>
+              <button onClick={() => setPage('about')}>About</button>
+              <button onClick={() => setPage('contact')}>Contact</button>
+              <button onClick={() => setPage('careers')}>Careers</button>
             </div>
             <div className="footer-col">
               <h4>Legal</h4>
-              <a href="#">Privacy</a>
-              <a href="#">Terms</a>
-              <a href="#">Cookies</a>
+              <button onClick={() => setPage('privacy')}>Privacy</button>
+              <button onClick={() => setPage('terms')}>Terms</button>
+              <button onClick={() => setPage('cookies')}>Cookies</button>
             </div>
             <div className="footer-col">
               <h4>Connect</h4>
-              <a href="#">Twitter</a>
-              <a href="#">LinkedIn</a>
-              <a href="#">Telegram</a>
+              <button onClick={() => window.open('https://twitter.com', '_blank')}>
+                <ExternalLink size={12} /> Twitter
+              </button>
+              <button onClick={() => window.open('https://linkedin.com', '_blank')}>
+                <ExternalLink size={12} /> LinkedIn
+              </button>
+              <button onClick={() => window.open('https://t.me', '_blank')}>
+                <ExternalLink size={12} /> Telegram
+              </button>
             </div>
           </div>
           

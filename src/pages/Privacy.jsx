@@ -1,10 +1,12 @@
 import { useTranslation } from '../context/TranslationContext';
+import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
-import { Shield, Eye, Lock, User, Database, Bell, Mail, Trash2 } from 'lucide-react';
+import { Shield, Eye, Lock, User, Database, Bell, Mail, Trash2, ArrowLeft, Home } from 'lucide-react';
 import './InfoPage.css';
 
 export default function Privacy() {
   const { t } = useTranslation();
+  const { setPage } = useVeloCity();
 
   const sections = [
     {
@@ -68,6 +70,10 @@ We do NOT sell your personal information to third parties.`
 
   return (
     <div className="info-page">
+      <div className="page-nav">
+        <button onClick={() => setPage('landing')} className="back-btn"><ArrowLeft size={18} /> Back</button>
+        <button onClick={() => setPage('landing')} className="home-btn"><Home size={18} /></button>
+      </div>
       <div className="info-hero">
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}

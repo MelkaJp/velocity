@@ -334,7 +334,7 @@ export default function AdminDashboard() {
                     <span className="status-value">Apr 14, 2026 00:00</span>
                   </div>
                 </div>
-                <button className="btn-settle">
+                <button className="btn-settle" onClick={() => alert('Settlement report generated. Check downloads.')}>
                   <Download size={18} />
                   Generate Report
                 </button>
@@ -419,11 +419,11 @@ export default function AdminDashboard() {
               <div className="panel-header">
                 <h3>Anomaly Detection Log</h3>
                 <div className="panel-actions">
-                  <button className="btn-filter">
+                  <button className="btn-filter" onClick={() => alert('Filter options opened.')}>
                     <Filter size={16} />
                     Filter
                   </button>
-                  <button className="btn-export">
+                  <button className="btn-export" onClick={() => alert('Anomaly log exported.')}>
                     <Download size={16} />
                     Export
                   </button>

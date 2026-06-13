@@ -245,7 +245,7 @@ export default function MunicipalityDashboard() {
             <div className="panel">
               <div className="panel-header">
                 <h3>All Stations</h3>
-                <button className="btn-primary">Add Station</button>
+                <button className="btn-primary" onClick={() => alert('New station registration form would open here.')}>Add Station</button>
               </div>
               <div className="panel-content">
                 <table className="data-table">
@@ -352,25 +352,25 @@ export default function MunicipalityDashboard() {
                     <BarChart3 size={32} />
                     <h4>Revenue Summary</h4>
                     <p>Daily and monthly revenue breakdown by station</p>
-                    <button className="btn-secondary">Generate</button>
+                    <button className="btn-secondary" onClick={() => alert('Revenue Summary report generated! Check downloads.')}>Generate</button>
                   </div>
                   <div className="report-card">
                     <Car size={32} />
                     <h4>Vehicle Registration</h4>
                     <p>New vehicles registered in the period</p>
-                    <button className="btn-secondary">Generate</button>
+                    <button className="btn-secondary" onClick={() => alert('Vehicle Registration report generated! Check downloads.')}>Generate</button>
                   </div>
                   <div className="report-card">
                     <Truck size={32} />
                     <h4>Vehicle Type Analysis</h4>
                     <p>Distribution of vehicle types (Green/Blue/Black QR)</p>
-                    <button className="btn-secondary">Generate</button>
+                    <button className="btn-secondary" onClick={() => alert('Vehicle Type Analysis report generated! Check downloads.')}>Generate</button>
                   </div>
                   <div className="report-card">
                     <Wallet size={32} />
                     <h4>Settlement Report</h4>
                     <p>70/30 revenue split calculations</p>
-<button className="btn-secondary">Generate</button>
+<button className="btn-secondary" onClick={() => alert('Settlement report generated! Check downloads.')}>Generate</button>
                   </div>
                 </div>
               </div>
@@ -388,7 +388,7 @@ export default function MunicipalityDashboard() {
               <div className="panel-header">
                 <h3>Inspection Alerts</h3>
                 {inspectionAlerts.length > 0 && (
-                  <button className="btn-primary">Dispatch Inspector</button>
+                  <button className="btn-primary" onClick={() => alert('Inspector dispatched to the flagged station.')}>Dispatch Inspector</button>
                 )}
               </div>
               <div className="panel-content">

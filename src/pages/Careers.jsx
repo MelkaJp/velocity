@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import { useTranslation } from '../context/TranslationContext';
+import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
-import { Briefcase, MapPin, Clock, DollarSign, Send, CheckCircle } from 'lucide-react';
+import { Briefcase, MapPin, Clock, DollarSign, Send, CheckCircle, ArrowLeft, Home } from 'lucide-react';
 import './InfoPage.css';
 
 export default function Careers() {
   const { t } = useTranslation();
+  const { setPage } = useVeloCity();
+  const [appliedJob, setAppliedJob] = useState(null);
 
   const openings = [
     {
@@ -70,6 +74,10 @@ export default function Careers() {
 
   return (
     <div className="info-page">
+      <div className="page-nav">
+        <button onClick={() => setPage('landing')} className="back-btn"><ArrowLeft size={18} /> Back</button>
+        <button onClick={() => setPage('landing')} className="home-btn"><Home size={18} /></button>
+      </div>
       <div className="info-hero">
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
@@ -128,8 +136,8 @@ export default function Careers() {
               <span><Clock size={16} /> {job.type}</span>
               <span><DollarSign size={16} /> {job.salary}</span>
             </div>
-            <button className="job-btn">
-              <Send size={16} /> Apply Now
+            <button className="job-btn" onClick={() => setAppliedJob(job.title)}>
+              <Send size={16} /> {appliedJob === job.title ? 'Applied!' : 'Apply Now'}
             </button>
           </motion.div>
         ))}

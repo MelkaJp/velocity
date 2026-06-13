@@ -1,16 +1,19 @@
 import { useTranslation } from '../context/TranslationContext';
+import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { Fuel, Check, X, Star, Users, Building2, MapPin, ArrowLeft, Home } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
 import './InfoPage.css';
 
 export default function Pricing() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { setPage } = useVeloCity();
 
   const handleSignup = (planName) => {
-    const role = planName.toLowerCase().replace(' ', '_');
-    navigate(`/signup?role=${role}`);
+    setPage('landing');
+    setTimeout(() => {
+      const el = document.querySelector('.btn-signup');
+      if (el) el.click();
+    }, 100);
   };
 
   const plans = [
@@ -88,8 +91,8 @@ export default function Pricing() {
   return (
     <div className="info-page">
       <div className="page-nav">
-        <Link to="/" className="back-btn"><ArrowLeft size={18} /> {t('back', 'Back')}</Link>
-        <Link to="/" className="home-btn"><Home size={18} /></Link>
+        <button onClick={() => setPage('landing')} className="back-btn"><ArrowLeft size={18} /> {t('back', 'Back')}</button>
+        <button onClick={() => setPage('landing')} className="home-btn"><Home size={18} /></button>
       </div>
       <div className="info-hero">
         <motion.h1 

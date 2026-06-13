@@ -90,6 +90,7 @@ const initialState = {
   transactions: [],
   stations: [],
   stats: dailyStats,
+  currentPage: 'landing',
   currentPortal: 'landing',
   apiStatus: 'demo',
   driverLocks: {},
@@ -111,6 +112,8 @@ function veloCityReducer(state, action) {
       return { ...initialState, apiStatus: state.apiStatus, currency: state.currency };
     case 'SET_USER':
       return { ...state, user: action.payload };
+    case 'SET_PAGE':
+      return { ...state, currentPage: action.payload };
     case 'SET_PORTAL':
       return { ...state, currentPortal: action.payload };
     case 'SET_VEHICLES':
@@ -718,6 +721,10 @@ const calculateSubscriptionRevenue = (subscriptionFee) => {
   };
 };
 
+  const setPage = (page) => {
+    dispatch({ type: 'SET_PAGE', payload: page });
+  };
+
 const sendNotification = async (driverId, message) => {
     const notification = {
       id: `NOTIF${Date.now()}`,
@@ -738,6 +745,7 @@ const sendNotification = async (driverId, message) => {
       state, 
       dispatch, 
       loading,
+      setPage,
       login,
       register,
       logout,

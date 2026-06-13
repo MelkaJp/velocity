@@ -316,7 +316,7 @@ export default function FleetManager() {
                   <Upload size={18} />
                   Add Vehicle
                 </button>
-                <button className="btn-toolbar">
+                <button className="btn-toolbar" onClick={() => alert('Fleet data exported as CSV.')}>
                   <Download size={18} />
                   Export
                 </button>
@@ -451,7 +451,7 @@ export default function FleetManager() {
                       <Route size={16} />
                       <span>Route Verified</span>
                     </div>
-                    <button className="btn-verify-route">Verify</button>
+                    <button className="btn-verify-route" onClick={() => alert('Route verified for this vehicle.')}>Verify</button>
                   </div>
                 ))}
                 {fleetVehicles.filter(v => v.type === 'truck').length === 0 && (
@@ -474,7 +474,7 @@ export default function FleetManager() {
                     <li>Priority support</li>
                     <li>Advanced analytics</li>
                   </ul>
-                  <button className="btn-sub">Current Plan</button>
+                  <button className="btn-sub" onClick={() => alert('You are already on the Premium plan.')}>Current Plan</button>
                 </div>
                 <div className="sub-card">
                   <div className="sub-header">
@@ -486,7 +486,7 @@ export default function FleetManager() {
                     <li>Basic analytics</li>
                     <li>Email support</li>
                   </ul>
-                  <button className="btn-sub outline">Upgrade</button>
+                  <button className="btn-sub outline" onClick={() => { const c = confirm('Upgrade to Basic for $49/mo?'); if (c) alert('Upgraded to Basic plan!'); }}>Upgrade</button>
                 </div>
               </div>
             </div>

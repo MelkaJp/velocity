@@ -1,11 +1,12 @@
 import { useTranslation } from '../context/TranslationContext';
+import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { Fuel, MapPin, Phone, Mail, Clock, Shield, Zap, Users, ArrowLeft, Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import './InfoPage.css';
 
 export default function About() {
   const { t } = useTranslation();
+  const { setPage } = useVeloCity();
 
   const stats = [
     { value: '2,847', label: 'Vehicles Registered' },
@@ -24,8 +25,8 @@ export default function About() {
   return (
     <div className="info-page">
       <div className="page-nav">
-        <Link to="/" className="back-btn"><ArrowLeft size={18} /> Back</Link>
-        <Link to="/" className="home-btn"><Home size={18} /></Link>
+        <button onClick={() => setPage('landing')} className="back-btn"><ArrowLeft size={18} /> Back</button>
+        <button onClick={() => setPage('landing')} className="home-btn"><Home size={18} /></button>
       </div>
       <div className="info-hero">
         <motion.h1 

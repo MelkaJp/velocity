@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import { useTranslation } from '../context/TranslationContext';
+import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
-import { Cookie, Settings, Bell, Eye, XCircle, CheckCircle } from 'lucide-react';
+import { Cookie, Settings, Bell, Eye, XCircle, CheckCircle, ArrowLeft, Home } from 'lucide-react';
 import './InfoPage.css';
 
 export default function Cookies() {
   const { t } = useTranslation();
+  const { setPage } = useVeloCity();
+  const [cookiePref, setCookiePref] = useState(null);
 
   const cookieTypes = [
     {
@@ -66,6 +70,10 @@ Please note that removing cookies may affect platform functionality.`
 
   return (
     <div className="info-page">
+      <div className="page-nav">
+        <button onClick={() => setPage('landing')} className="back-btn"><ArrowLeft size={18} /> Back</button>
+        <button onClick={() => setPage('landing')} className="home-btn"><Home size={18} /></button>
+      </div>
       <div className="info-hero">
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
@@ -129,11 +137,11 @@ Please note that removing cookies may affect platform functionality.`
           You can manage your cookie preferences at any time:
         </p>
         <div className="cookie-actions">
-          <button className="cookie-btn accept">
-            <CheckCircle size={18} /> Accept All
+          <button className="cookie-btn accept" onClick={() => setCookiePref('all')}>
+            <CheckCircle size={18} /> {cookiePref === 'all' ? 'Accepted!' : 'Accept All'}
           </button>
-          <button className="cookie-btn reject">
-            <XCircle size={18} /> Reject Non-Essential
+          <button className="cookie-btn reject" onClick={() => setCookiePref('essential')}>
+            <XCircle size={18} /> {cookiePref === 'essential' ? 'Saved!' : 'Reject Non-Essential'}
           </button>
         </div>
       </div>

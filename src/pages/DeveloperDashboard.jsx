@@ -201,7 +201,7 @@ export default function DeveloperDashboard() {
             <div className="panel">
               <div className="panel-header">
                 <h3>All Municipalities</h3>
-                <button className="btn-primary">Add Municipality</button>
+                <button className="btn-primary" onClick={() => alert('New municipality registration form would open here.')}>Add Municipality</button>
               </div>
               <div className="panel-content">
                 <table className="data-table">
@@ -250,7 +250,7 @@ export default function DeveloperDashboard() {
                 <h3>All Fuel Stations</h3>
                 <div className="header-filters">
                   <input type="text" placeholder="Search stations..." className="search-input" />
-                  <button className="btn-primary">Add Station</button>
+                  <button className="btn-primary" onClick={() => alert('New station registration form would open here.')}>Add Station</button>
                 </div>
               </div>
               <div className="panel-content">
@@ -369,7 +369,7 @@ export default function DeveloperDashboard() {
                     <input type="number" defaultValue="500" />
                   </div>
                 </div>
-                <button className="btn-primary">Save Changes</button>
+                <button className="btn-primary" onClick={() => alert('System preferences saved successfully!')}>Save Changes</button>
               </div>
             </div>
           </motion.div>

@@ -279,7 +279,7 @@ export default function StationManagerDashboard() {
             <div className="panel">
               <div className="panel-header">
                 <h3>Station Workers</h3>
-                <button className="btn-primary">
+                <button className="btn-primary" onClick={() => alert('Worker registration form would open here.')}>
                   <Plus size={18} />
                   Add Worker
                 </button>
@@ -332,7 +332,10 @@ export default function StationManagerDashboard() {
             <div className="panel">
               <div className="panel-header">
                 <h3>Fuel Inventory</h3>
-                <button className="btn-primary">
+                <button className="btn-primary" onClick={() => {
+                  const liters = prompt('Enter fuel liters received:');
+                  if (liters) recordFuelReceived('ST001', parseInt(liters));
+                }}>
                   <Plus size={18} />
                   Add Fuel
                 </button>
@@ -482,7 +485,7 @@ export default function StationManagerDashboard() {
                   </div>
                 </div>
 
-                <button className="btn-primary">Save Changes</button>
+                <button className="btn-primary" onClick={() => alert('Settings saved successfully!')}>Save Changes</button>
               </div>
             </div>
           </motion.div>

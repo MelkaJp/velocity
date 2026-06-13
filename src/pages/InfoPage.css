@@ -699,6 +699,22 @@
   color: white;
 }
 
+.page-nav button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.form-success {
+  background: rgba(0, 212, 170, 0.1);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  color: #00d4aa;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 @media (max-width: 768px) {
   .audience-cards,
   .pricing-grid,
