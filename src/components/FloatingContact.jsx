@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   MessageCircle, Send, Phone, X, HelpCircle, ChevronDown,
   Search, Mail, ThumbsUp, ExternalLink, FileText, CreditCard, Truck,
@@ -8,8 +8,7 @@ import './FloatingContact.css';
 
 const faqData = [
   {
-    category: 'Getting Started',
-    icon: User,
+    category: 'Getting Started', icon: User,
     questions: [
       { q: 'How do I create an account?', a: 'Click "Create Account" on the login page. Choose your role (Driver, Fleet Owner, etc.), fill in your details, and verify your email/phone with the 6-digit code sent to you.' },
       { q: 'What documents do I need to register a vehicle?', a: 'You need your vehicle license plate number, a photo for verification, and your phone number. Optionally, you can join a driver association.' },
@@ -17,8 +16,7 @@ const faqData = [
     ],
   },
   {
-    category: 'Fueling & Payments',
-    icon: Fuel,
+    category: 'Fueling & Payments', icon: Fuel,
     questions: [
       { q: 'How do I refuel at a station?', a: 'Arrive at the station, show your static vehicle QR or generate a refuel quota QR from your driver portal. The station worker scans it, verifies your identity, and dispenses the fuel. Payment is deducted from your fuel wallet.' },
       { q: 'How do I add funds to my wallet?', a: 'Go to the Fuel Wallet tab in your Driver Portal, click "Add Funds," enter the amount, and confirm. You can also transfer funds between your vehicles.' },
@@ -27,8 +25,7 @@ const faqData = [
     ],
   },
   {
-    category: 'Subscription Plans',
-    icon: CreditCard,
+    category: 'Subscription Plans', icon: CreditCard,
     questions: [
       { q: 'What subscription plans are available?', a: 'Basic (1,000 ETB/mo, 50L/day), Premium (2,500 ETB/mo, 150L/day), and Enterprise (5,000 ETB/mo, unlimited). Higher tiers give you larger daily fuel limits and priority queue access.' },
       { q: 'How do I upgrade my subscription?', a: 'Go to the Refuel tab in your Driver Portal, find your vehicle in the Subscription section, and click on the tier you want. The change takes effect immediately.' },
@@ -36,8 +33,7 @@ const faqData = [
     ],
   },
   {
-    category: 'Vehicles & Fleet',
-    icon: Truck,
+    category: 'Vehicles & Fleet', icon: Truck,
     questions: [
       { q: 'Can I register multiple vehicles?', a: 'Yes, fleet owners can register multiple vehicles. Each vehicle gets its own QR code, wallet, and subscription.' },
       { q: 'How do fleet owners manage drivers?', a: 'Fleet owners can view all vehicles, monitor fuel consumption per vehicle, set individual limits, and track spending across the entire fleet.' },
@@ -45,8 +41,7 @@ const faqData = [
     ],
   },
   {
-    category: 'Stations & Queue',
-    icon: Settings,
+    category: 'Stations & Queue', icon: Settings,
     questions: [
       { q: 'How do I find a station with available fuel?', a: 'Use the Refuel tab in your Driver Portal to view live station queues and estimated wait times before heading out. Stations show fuel availability status (Full, Half, Low, None).' },
       { q: 'How does the queue system work?', a: 'When you request refueling, you\'re added to the station\'s queue. The system estimates your wait time based on the number of vehicles ahead. You\'ll see your position update in real time.' },
@@ -54,8 +49,7 @@ const faqData = [
     ],
   },
   {
-    category: 'Security & Support',
-    icon: Shield,
+    category: 'Security & Support', icon: Shield,
     questions: [
       { q: 'How is my account protected?', a: 'Accounts are protected by password authentication. Suspicious activity (rapid refills, unusual patterns) is detected automatically and flagged for review.' },
       { q: 'What should I do if I suspect fuel theft?', a: 'Report it immediately via the "Report Issue" button in the Escalation Workflow. Station managers and municipality admins will review and take action.' },
@@ -73,6 +67,102 @@ const contactChannels = [
 ];
 
 const quickContact = contactChannels.slice(0, 3);
+
+function FaqContent({ search, setSearch, filtered, expanded, toggleQuestion }) {
+  return (
+    <div className="help-faq">
+      <div className="help-search">
+        <Search size={15} />
+        <input type="text" placeholder="Search FAQs..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      </div>
+      <div className="help-faq-list">
+        {filtered.length === 0 ? (
+          <div className="help-no-results">
+            <AlertCircle size={22} />
+            <p>No results for "{search}"</p>
+          </div>
+        ) : (
+          filtered.map((cat, ci) => (
+            <div key={ci} className="help-category">
+              <div className="help-category-header">
+                <cat.icon size={14} />
+                <span>{cat.category}</span>
+              </div>
+              {cat.questions.map((item, qi) => {
+                const id = `${ci}-${qi}`;
+                return (
+                  <div key={id} className={`help-question ${expanded === id ? 'expanded' : ''}`}>
+                    <button className="help-question-btn" onClick={() => toggleQuestion(id)}>
+                      <span>{item.q}</span>
+                      <ChevronDown size={14} className="help-chevron" />
+                    </button>
+                    {expanded === id && (
+                      <div className="help-answer">
+                        <p>{item.a}</p>
+                        <button className="help-feedback" onClick={(e) => { e.stopPropagation(); }}>
+                          <ThumbsUp size={11} /> Helpful
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ContactContent({ channels, compact }) {
+  return (
+    <div className="help-contact">
+      <p className="help-contact-intro">Choose how to reach us. We typically respond within minutes.</p>
+      <div className="help-contact-list">
+        {channels.map((opt, idx) => (
+          <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" className="help-contact-card" style={{ borderLeftColor: opt.color }}>
+            <div className="help-contact-icon" style={{ background: opt.color }}><opt.icon size={compact ? 18 : 20} /></div>
+            <div className="help-contact-info"><strong>{opt.label}</strong><span>{opt.sub}</span></div>
+            <ExternalLink size={compact ? 14 : 16} className="help-contact-ext" />
+          </a>
+        ))}
+      </div>
+      <div className="help-response-time">
+        <Clock size={compact ? 12 : 14} />
+        <span>Average response: &lt; 5 minutes</span>
+      </div>
+    </div>
+  );
+}
+
+function HelpPanel({ activeTab, setActiveTab, search, setSearch, filtered, expanded, toggleQuestion, onClose, compact }) {
+  return (
+    <div className={`help-panel${compact ? ' help-panel--mobile' : ''}`}>
+      <div className="help-panel-header">
+        <HelpCircle size={compact ? 20 : 22} />
+        <span>Help & Support</span>
+        <button className="help-panel-close" onClick={onClose}><X size={18} /></button>
+      </div>
+      <div className="help-tabs">
+        <button className={`help-tab ${activeTab === 'faq' ? 'active' : ''}`} onClick={() => setActiveTab('faq')}>
+          <FileText size={compact ? 14 : 16} /> FAQ
+        </button>
+        <button className={`help-tab ${activeTab === 'contact' ? 'active' : ''}`} onClick={() => setActiveTab('contact')}>
+          <MessageSquare size={compact ? 14 : 16} /> Contact
+        </button>
+      </div>
+      {activeTab === 'faq' ? (
+        <FaqContent search={search} setSearch={setSearch} filtered={filtered} expanded={expanded} toggleQuestion={toggleQuestion} />
+      ) : (
+        <ContactContent channels={contactChannels} compact={compact} />
+      )}
+      <div className="help-panel-footer">
+        <span>VeloCity v{import.meta.env.VITE_APP_VERSION || '2.0'}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function FloatingContact() {
   const [helpOpen, setHelpOpen] = useState(false);
@@ -99,104 +189,39 @@ export default function FloatingContact() {
     })).filter(cat => cat.questions.length > 0);
   }, [search]);
 
-  const toggleQuestion = (id) => {
-    setExpanded(expanded === id ? null : id);
-  };
+  const toggleQuestion = useCallback((id) => {
+    setExpanded(prev => prev === id ? null : id);
+  }, []);
 
-  const closeAll = () => {
+  const closeAll = useCallback(() => {
     setHelpOpen(false);
     setContactOpen(false);
     setSearch('');
     setExpanded(null);
-  };
+  }, []);
+
+  const openHelp = useCallback(() => {
+    setHelpOpen(true);
+    setContactOpen(false);
+  }, []);
+
+  const toggleContact = useCallback(() => {
+    setContactOpen(prev => !prev);
+    setHelpOpen(false);
+  }, []);
 
   if (isMobile) {
     return (
       <>
         {helpOpen && <div className="help-overlay" onClick={closeAll} />}
         {helpOpen && (
-          <div className="help-panel help-panel--mobile">
-            <div className="help-panel-header">
-              <HelpCircle size={20} />
-              <span>Help & Support</span>
-              <button className="help-panel-close" onClick={closeAll}><X size={18} /></button>
-            </div>
-            <div className="help-tabs">
-              <button className={`help-tab ${activeTab === 'faq' ? 'active' : ''}`} onClick={() => setActiveTab('faq')}>
-                <FileText size={14} /> FAQ
-              </button>
-              <button className={`help-tab ${activeTab === 'contact' ? 'active' : ''}`} onClick={() => setActiveTab('contact')}>
-                <MessageSquare size={14} /> Contact
-              </button>
-            </div>
-            {activeTab === 'faq' && (
-              <div className="help-faq">
-                <div className="help-search">
-                  <Search size={14} />
-                  <input type="text" placeholder="Search FAQs..." value={search} onChange={(e) => setSearch(e.target.value)} />
-                </div>
-                <div className="help-faq-list">
-                  {filtered.length === 0 ? (
-                    <div className="help-no-results">
-                      <AlertCircle size={20} />
-                      <p>No results for "{search}"</p>
-                    </div>
-                  ) : (
-                    filtered.map((cat, ci) => (
-                      <div key={ci} className="help-category">
-                        <div className="help-category-header">
-                          <cat.icon size={13} />
-                          <span>{cat.category}</span>
-                        </div>
-                        {cat.questions.map((item, qi) => {
-                          const id = `${ci}-${qi}`;
-                          return (
-                            <div key={id} className={`help-question ${expanded === id ? 'expanded' : ''}`}>
-                              <button className="help-question-btn" onClick={() => toggleQuestion(id)}>
-                                <span>{item.q}</span>
-                                <ChevronDown size={14} className="help-chevron" />
-                              </button>
-                              {expanded === id && (
-                                <div className="help-answer">
-                                  <p>{item.a}</p>
-                                  <button className="help-feedback" onClick={() => {}}>
-                                    <ThumbsUp size={11} /> Helpful
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-            {activeTab === 'contact' && (
-              <div className="help-contact">
-                <p className="help-contact-intro">Choose how to reach us. We typically respond within minutes.</p>
-                <div className="help-contact-list">
-                  {contactChannels.map((opt, idx) => (
-                    <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" className="help-contact-card" style={{ borderLeftColor: opt.color }}>
-                      <div className="help-contact-icon" style={{ background: opt.color }}><opt.icon size={18} /></div>
-                      <div className="help-contact-info"><strong>{opt.label}</strong><span>{opt.sub}</span></div>
-                      <ExternalLink size={14} className="help-contact-ext" />
-                    </a>
-                  ))}
-                </div>
-                <div className="help-response-time">
-                  <Clock size={12} />
-                  <span>Average response: &lt; 5 minutes</span>
-                </div>
-              </div>
-            )}
-            <div className="help-panel-footer">
-              <span>VeloCity v{import.meta.env.VITE_APP_VERSION || '2.0'}</span>
-            </div>
-          </div>
+          <HelpPanel
+            activeTab={activeTab} setActiveTab={setActiveTab}
+            search={search} setSearch={setSearch}
+            filtered={filtered} expanded={expanded} toggleQuestion={toggleQuestion}
+            onClose={closeAll} compact
+          />
         )}
-
         {contactOpen && (
           <div className="quick-contact-popup">
             {quickContact.map((opt, idx) => (
@@ -207,13 +232,13 @@ export default function FloatingContact() {
             ))}
           </div>
         )}
-
         <div className="mobile-help-bar">
-          <button className="mobile-help-btn" onClick={() => { setHelpOpen(true); setContactOpen(false); }}>
+          <button className="mhb-btn" onClick={openHelp}>
             <LifeBuoy size={20} />
             <span>Help</span>
           </button>
-          <button className="mobile-help-btn" onClick={() => { setContactOpen(!contactOpen); setHelpOpen(false); }}>
+          <div className="mhb-divider" />
+          <button className="mhb-btn" onClick={toggleContact}>
             <MessageCircle size={20} />
             <span>Contact</span>
           </button>
@@ -223,116 +248,41 @@ export default function FloatingContact() {
   }
 
   return (
-    <div className="floating-contact">
+    <div className="fc-wrapper">
       {helpOpen && (
-        <div className="help-panel">
-          <div className="help-panel-header">
-            <HelpCircle size={22} />
-            <span>Help & Support</span>
-            <button className="help-panel-close" onClick={() => { setHelpOpen(false); setSearch(''); setExpanded(null); }}><X size={18} /></button>
-          </div>
-          <div className="help-tabs">
-            <button className={`help-tab ${activeTab === 'faq' ? 'active' : ''}`} onClick={() => setActiveTab('faq')}>
-              <FileText size={16} /> FAQ
-            </button>
-            <button className={`help-tab ${activeTab === 'contact' ? 'active' : ''}`} onClick={() => setActiveTab('contact')}>
-              <MessageSquare size={16} /> Contact
-            </button>
-          </div>
-          {activeTab === 'faq' && (
-            <div className="help-faq">
-              <div className="help-search">
-                <Search size={16} />
-                <input type="text" placeholder="Search FAQs..." value={search} onChange={(e) => setSearch(e.target.value)} />
-              </div>
-              <div className="help-faq-list">
-                {filtered.length === 0 ? (
-                  <div className="help-no-results">
-                    <AlertCircle size={24} />
-                    <p>No results for "{search}"</p>
-                  </div>
-                ) : (
-                  filtered.map((cat, ci) => (
-                    <div key={ci} className="help-category">
-                      <div className="help-category-header">
-                        <cat.icon size={16} />
-                        <span>{cat.category}</span>
-                      </div>
-                      {cat.questions.map((item, qi) => {
-                        const id = `${ci}-${qi}`;
-                        return (
-                          <div key={id} className={`help-question ${expanded === id ? 'expanded' : ''}`}>
-                            <button className="help-question-btn" onClick={() => toggleQuestion(id)}>
-                              <span>{item.q}</span>
-                              <ChevronDown size={16} className="help-chevron" />
-                            </button>
-                            {expanded === id && (
-                              <div className="help-answer">
-                                <p>{item.a}</p>
-                                <button className="help-feedback" onClick={() => {}}>
-                                  <ThumbsUp size={12} /> Helpful
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-          {activeTab === 'contact' && (
-            <div className="help-contact">
-              <p className="help-contact-intro">Choose how to reach us. We typically respond within minutes.</p>
-              <div className="help-contact-list">
-                {contactChannels.map((opt, idx) => (
-                  <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" className="help-contact-card" style={{ borderLeftColor: opt.color }}>
-                    <div className="help-contact-icon" style={{ background: opt.color }}><opt.icon size={20} /></div>
-                    <div className="help-contact-info"><strong>{opt.label}</strong><span>{opt.sub}</span></div>
-                    <ExternalLink size={16} className="help-contact-ext" />
-                  </a>
-                ))}
-              </div>
-              <div className="help-response-time">
-                <Clock size={14} />
-                <span>Average response: &lt; 5 minutes</span>
-              </div>
-            </div>
-          )}
-          <div className="help-panel-footer">
-            <span>VeloCity v{import.meta.env.VITE_APP_VERSION || '2.0'}</span>
-          </div>
-        </div>
+        <HelpPanel
+          activeTab={activeTab} setActiveTab={setActiveTab}
+          search={search} setSearch={setSearch}
+          filtered={filtered} expanded={expanded} toggleQuestion={toggleQuestion}
+          onClose={closeAll}
+        />
       )}
-
       {contactOpen && (
-        <div className="floating-contact-options">
+        <div className="fc-quick-list">
           {quickContact.map((opt, idx) => (
-            <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" title={opt.label} className="floating-contact-link" style={{ animationDelay: `${idx * 0.1}s` }}>
-              <div className="floating-contact-icon" style={{ background: opt.color }}><opt.icon size={20} /></div>
+            <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" className="fc-quick-item" style={{ animationDelay: `${idx * 0.08}s` }}>
+              <div className="fc-quick-badge" style={{ background: opt.color }}><opt.icon size={18} /></div>
+              <span>{opt.label}</span>
             </a>
           ))}
         </div>
       )}
-
-      <div className="floating-contact-buttons">
-        {helpOpen || contactOpen ? (
-          <button className="floating-contact-toggle close-btn" onClick={closeAll} aria-label="Close">
-            <X size={22} />
+      {helpOpen || contactOpen ? (
+        <button className="fc-btn fc-btn--close" onClick={closeAll}>
+          <X size={18} />
+        </button>
+      ) : (
+        <div className="fc-btn-group">
+          <button className="fc-btn fc-btn--contact" onClick={toggleContact}>
+            <MessageCircle size={18} />
+            <span>Contact</span>
           </button>
-        ) : (
-          <>
-            <button className="floating-contact-toggle" onClick={() => setContactOpen(true)} aria-label="Contact" style={{ background: '#0088cc' }}>
-              <MessageCircle size={20} />
-            </button>
-            <button className="floating-contact-toggle" onClick={() => setHelpOpen(true)} aria-label="Help">
-              <LifeBuoy size={20} />
-            </button>
-          </>
-        )}
-      </div>
+          <button className="fc-btn fc-btn--help" onClick={openHelp}>
+            <LifeBuoy size={18} />
+            <span>Help</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
