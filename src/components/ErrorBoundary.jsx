@@ -6,7 +6,7 @@ export class ErrorBoundary extends Component {
     this.state = { hasError: false, error: null, errorInfo: null };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
@@ -83,7 +83,7 @@ export class ErrorBoundary extends Component {
   }
 }
 
-export function withErrorLogging(WrappedComponent, componentName) {
+export function withErrorLogging(WrappedComponent) {
   return function ErrorLoggedComponent(props) {
     return (
       <ErrorBoundary>

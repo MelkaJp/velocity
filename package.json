@@ -4,13 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "npm run start:backend && npm run start:frontend",
+    "start:backend": "cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload",
+    "start:frontend": "vite --host"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.103.0",
+    "@supabase/supabase-js": "^2.103.3",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.8.0",
     "qrcode.react": "^4.2.0",
@@ -24,6 +27,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",

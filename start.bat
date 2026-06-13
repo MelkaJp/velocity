@@ -22,13 +22,17 @@ if errorlevel 1 (
     exit /b 1
 )
 
+echo [1/3] Installing Backend dependencies...
+cd /d %~dp0backend
+pip install -q fastapi uvicorn pydantic python-multipart python-dotenv
+
 echo [1/3] Starting Backend API (Port 8000)...
-start "VeloCity Backend" cmd /k "cd /d %~dp0backend && pip install -q fastapi uvicorn pydantic && python main.py"
+start "VeloCity Backend" cmd /k "cd /d %~dp0backend && python -m uvicorn main:app --host 0.0.0.0 --port 8000"
 
 timeout /t 3 /nobreak >nul
 
 echo [2/3] Starting Frontend (Port 5173)...
-start "VeloCity Frontend" cmd /k "cd /d %~dp0 && npm run dev"
+start "VeloCity Frontend" cmd /k "cd /d %~dp0 && npm run dev -- --host"
 
 timeout /t 3 /nobreak >nul
 

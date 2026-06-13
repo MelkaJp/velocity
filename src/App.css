@@ -2,7 +2,17 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--background);
+  background: var(--page-background);
+  background-image: var(--page-gradient);
+}
+
+.app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--page-gradient);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .main-content {
