@@ -285,25 +285,201 @@ input, select, textarea {
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
 }
 
-[data-theme="light"] .glass {
-  background: rgba(255, 255, 255, 0.8);
-  border-color: rgba(0, 0, 0, 0.08);
+[data-theme="light"] .glass,
+[data-theme="light"] .card-glass,
+[data-theme="light"] .card-modern,
+[data-theme="light"] .auth-container {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: var(--border) !important;
+  backdrop-filter: blur(20px);
 }
 
-[data-theme="light"] .landing {
-  background: var(--background);
+[data-theme="light"] .landing,
+[data-theme="light"] .landing-header {
+  background: var(--background) !important;
 }
 
 [data-theme="light"] .landing-bg .landing-glow-main,
 [data-theme="light"] .landing-bg .landing-glow-accent {
-  opacity: 0.3;
+  opacity: 0.15;
+}
+
+[data-theme="light"] .footer {
+  background: var(--surface) !important;
+  border-top: 1px solid var(--border);
 }
 
 [data-theme="light"] select option {
   background-color: #ffffff;
   color: #0f172a;
+}
+
+/* ===== Light Theme: Navbar ===== */
+[data-theme="light"] .navbar,
+[data-theme="light"] .navbar.scrolled {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: var(--border) !important;
+  backdrop-filter: blur(20px);
+}
+
+[data-theme="light"] .user-dropdown,
+[data-theme="light"] .mobile-menu {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="light"] .portal-btn {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .portal-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .portal-btn.active {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--accent-blue);
+}
+
+/* ===== Light Theme: Landing Page ===== */
+[data-theme="light"] .stat-number,
+[data-theme="light"] .footer-col h4,
+[data-theme="light"] .faq-question,
+[data-theme="light"] .btn-login,
+[data-theme="light"] .btn-ghost:hover,
+[data-theme="light"] .protocol-card .protocol-icon {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .btn-secondary {
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="light"] .qr-mockup {
+  background: var(--surface) !important;
+}
+
+[data-theme="light"] .qr-cell.dark {
+  background: var(--surface-hover) !important;
+}
+
+[data-theme="light"] .hero-stat .stat-label,
+[data-theme="light"] .feature-card p,
+[data-theme="light"] .solution-card p,
+[data-theme="light"] .footer p,
+[data-theme="light"] .footer-contact a {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .feature-card h3,
+[data-theme="light"] .solution-card h3,
+[data-theme="light"] .testimonial-card strong,
+[data-theme="light"] .testimonial-card p,
+[data-theme="light"] .testimonial-card .testimonial-author span {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .testimonial-avatar {
+  background: var(--accent-green) !important;
+  color: #050508 !important;
+}
+
+[data-theme="light"] .faq-item {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="light"] .faq-answer p {
+  color: var(--text-secondary) !important;
+  border-top-color: var(--border) !important;
+}
+
+[data-theme="light"] .cta-section {
+  background: var(--secondary) !important;
+}
+
+[data-theme="light"] .footer {
+  background: var(--surface) !important;
+}
+
+[data-theme="light"] .footer-links-grid button {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .footer-links-grid button:hover {
+  color: var(--accent-blue) !important;
+}
+
+[data-theme="light"] .footer-bottom {
+  border-top-color: var(--border) !important;
+}
+
+/* ===== Light Theme: Info Pages ===== */
+[data-theme="light"] .info-section h2,
+[data-theme="light"] .info-section h3,
+[data-theme="light"] .info-section h4,
+[data-theme="light"] .feature-card h3,
+[data-theme="light"] .audience-card h3,
+[data-theme="light"] .pricing-card h3,
+[data-theme="light"] .pricing-price .price,
+[data-theme="light"] .job-header h3,
+[data-theme="light"] .cookie-header h3,
+[data-theme="light"] .faq-item h4,
+[data-theme="light"] .cookie-btn.reject,
+[data-theme="light"] .contact-item p,
+[data-theme="light"] .pricing-btn {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .info-section p,
+[data-theme="light"] .info-section li,
+[data-theme="light"] .feature-card p,
+[data-theme="light"] .audience-card p,
+[data-theme="light"] .pricing-card p,
+[data-theme="light"] .pricing-card li,
+[data-theme="light"] .contact-form input,
+[data-theme="light"] .contact-form textarea,
+[data-theme="light"] .contact-form input::placeholder,
+[data-theme="light"] .contact-form textarea::placeholder {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .contact-form input,
+[data-theme="light"] .contact-form textarea {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="light"] .pricing-card,
+[data-theme="light"] .feature-card,
+[data-theme="light"] .audience-card,
+[data-theme="light"] .job-card,
+[data-theme="light"] .faq-item,
+[data-theme="light"] .contact-card {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="light"] .pricing-card.popular {
+  border-color: var(--accent-green) !important;
+}
+
+[data-theme="light"] .back-btn,
+[data-theme="light"] .home-btn {
+  color: var(--text-secondary) !important;
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="light"] .back-btn:hover,
+[data-theme="light"] .home-btn:hover {
+  color: var(--accent-green) !important;
+  background: var(--surface-hover) !important;
 }
 
 /* ===== ThemeToggle ===== */
