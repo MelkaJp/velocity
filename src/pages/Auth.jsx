@@ -4,11 +4,11 @@ import { useTranslation } from '../context/TranslationContext';
 import Button from '../components/Button';
 import ConfettiFireworks from '../components/ConfettiFireworks';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Fuel, Mail, Lock, User, Phone, AlertCircle, Car, Bike, Truck, DollarSign, Building2, X, Sparkles } from 'lucide-react';
+import { Fuel, Mail, Lock, User, Phone, AlertCircle, Car, Bike, Truck, DollarSign, Building2, X, Sparkles, Shield, Home, ArrowLeft } from 'lucide-react';
 import './Auth.css';
 
 export default function Login({ initialMode = 'login', onClose }) {
-  const { state, login, register, registerVehicle, setCurrency, CURRENCY_RATES, ASSOCIATIONS, FUEL_AVAILABILITY } = useVeloCity();
+  const { state, dispatch, login, register, registerVehicle, loginAs, setCurrency, CURRENCY_RATES, ASSOCIATIONS, FUEL_AVAILABILITY } = useVeloCity();
   const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(initialMode === 'register' ? false : true);
   const [loading, setLoading] = useState(false);
@@ -32,8 +32,13 @@ export default function Login({ initialMode = 'login', onClose }) {
   });
   const [showVehicleReg, setShowVehicleReg] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
-  const [registeredVehicle, setRegisteredVehicle] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [step, setStep] = useState('register');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationInput, setVerificationInput] = useState('');
+  const [registeredUserData, setRegisteredUserData] = useState(null);
+  const [forgotPassword, setForgotPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,8 +59,14 @@ export default function Login({ initialMode = 'login', onClose }) {
       
       const result = await register(formData);
       if (result.success) {
-        setShowConfetti(true);
-        setIsLogin(true);
+        const code = String(Math.floor(100000 + Math.random() * 900000)); // eslint-disable-line react-hooks/purity
+        setVerificationCode(code);
+        setRegisteredUserData({
+          id: result.user?.id || `U${Date.now()}`, // eslint-disable-line react-hooks/purity
+          ...formData,
+          accessLevel: getAccessLevel(formData.role),
+        });
+        setStep('verify');
         setError('');
       } else {
         setError(result.detail || 'Registration failed');
@@ -85,12 +96,61 @@ export default function Login({ initialMode = 'login', onClose }) {
       }, userResult.user?.id);
 
       if (vehicleResult.success) {
-        setShowConfetti(true);
-        setRegisteredVehicle(vehicleResult.vehicle);
+        const code = String(Math.floor(100000 + Math.random() * 900000)); // eslint-disable-line react-hooks/purity
+        setVerificationCode(code);
+        setRegisteredUserData({
+          id: userResult.user?.id || `U${Date.now()}`, // eslint-disable-line react-hooks/purity
+          ...formData,
+          accessLevel: getAccessLevel(formData.role),
+        });
+        setStep('verify');
       }
     }
     
     setLoading(false);
+  };
+
+  const getAccessLevel = (role) => {
+    const map = {
+      super_admin: 100,
+      developer_admin: 90,
+      municipality_admin: 80,
+      station_manager: 70,
+      station_worker: 60,
+      fleet_owner: 50,
+      driver: 10,
+    };
+    return map[role] || 10;
+  };
+
+  const handleVerify = () => {
+    if (verificationInput === verificationCode) {
+      setError('');
+      setShowConfetti(true);
+      setStep('complete');
+      setTimeout(() => {
+        loginAs(registeredUserData);
+      }, 2000);
+    } else {
+      setError('Invalid verification code. Please try again.');
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    await new Promise(r => setTimeout(r, 1200));
+    setResetSent(true);
+    setLoading(false);
+  };
+
+  const handleGoHome = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      dispatch({ type: 'SET_PORTAL', payload: 'landing' });
+    }
   };
 
   const roles = [
@@ -104,9 +164,10 @@ export default function Login({ initialMode = 'login', onClose }) {
     { value: 'truck', label: 'Truck (Black)', icon: Truck, maxTank: 500 },
   ];
 
-  if (registeredVehicle) {
+  if (step === 'complete') {
     return (
       <div className="auth-page">
+        <ConfettiFireworks trigger={showConfetti} />
         <div className="auth-bg"></div>
         <motion.div 
           className="auth-container"
@@ -115,24 +176,72 @@ export default function Login({ initialMode = 'login', onClose }) {
         >
           <div className="auth-header">
             <Fuel size={40} />
-            <h1>Registration Complete!</h1>
-            <p>Your vehicle has been registered successfully</p>
+            <h1>Welcome to VeloCity!</h1>
+            <p>Your account has been verified. Redirecting to dashboard...</p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (step === 'verify') {
+    return (
+      <div className="auth-page">
+        <ConfettiFireworks trigger={showConfetti} />
+        <div className="auth-bg"></div>
+        <motion.div 
+          className="auth-container"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+        >
+          <div className="auth-header">
+            <Shield size={40} />
+            <h1>Verify Your Account</h1>
+            <p>A verification code was sent to your email and phone</p>
           </div>
 
-          <div className="registered-vehicle-info">
-            <h3>{registeredVehicle.plate}</h3>
-            <span className={`vehicle-type-badge ${registeredVehicle.type}`}>
-              {registeredVehicle.type.toUpperCase()} QR
-            </span>
+          <div className="verification-info">
+            <Mail size={18} />
+            <span>{formData.email || formData.phone}</span>
           </div>
 
-          <div className="qr-info">
-            <p>Your QR code has been generated. Show it at any VeloCity fuel station to fill up.</p>
+          <div className="demo-notice">
+            <Sparkles size={16} />
+            <span>Demo mode — Your code: <strong>{verificationCode}</strong></span>
           </div>
 
-          <Button variant="primary" size="lg" fullWidth onClick={() => window.location.reload()}>
-            Go to Login
+          <div className="form-group">
+            <label>Enter 6-Digit Code</label>
+            <input
+              type="text"
+              maxLength={6}
+              placeholder="000000"
+              value={verificationInput}
+              onChange={(e) => setVerificationInput(e.target.value.replace(/\D/g, ''))}
+              autoFocus
+            />
+          </div>
+
+          {error && (
+            <div className="auth-error">
+              <AlertCircle size={18} />
+              {error}
+            </div>
+          )}
+
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            onClick={handleVerify}
+            disabled={verificationInput.length !== 6}
+          >
+            Verify & Continue
           </Button>
+
+          <p className="verification-hint">
+            Enter the 6-digit code shown above to verify your account
+          </p>
         </motion.div>
       </div>
     );
@@ -286,6 +395,74 @@ export default function Login({ initialMode = 'login', onClose }) {
     );
   }
 
+  if (forgotPassword) {
+    return (
+      <div className="auth-page">
+        <div className="auth-bg"></div>
+        <motion.div 
+          className="auth-container"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="auth-header">
+            <Lock size={40} />
+            <h1>{resetSent ? 'Check Your Inbox' : 'Reset Password'}</h1>
+            <p>{resetSent ? 'A reset link has been sent to your email' : 'Enter your email to receive a reset link'}</p>
+          </div>
+
+          {resetSent ? (
+            <>
+              <div className="verification-info">
+                <Mail size={18} />
+                <span>{formData.email || 'your email'}</span>
+              </div>
+              <p className="forgot-hint">
+                Follow the instructions in the email to reset your password. The link expires in 1 hour.
+              </p>
+              <Button variant="primary" size="lg" fullWidth onClick={() => { setForgotPassword(false); setResetSent(false); }}>
+                Back to Login
+              </Button>
+            </>
+          ) : (
+            <form onSubmit={handleForgotPassword} className="auth-form">
+              <div className="form-group">
+                <label>Email Address</label>
+                <div className="input-icon">
+                  <Mail size={18} />
+                  <input 
+                    type="email" 
+                    placeholder="Enter your registered email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="auth-error">
+                  <AlertCircle size={18} />
+                  {error}
+                </div>
+              )}
+
+              <Button type="submit" variant="primary" size="lg" fullWidth loading={loading}>
+                Send Reset Link
+              </Button>
+
+              <div className="auth-switch">
+                <button type="button" onClick={() => { setForgotPassword(false); setError(''); }}>
+                  <ArrowLeft size={16} style={{ verticalAlign: 'middle', marginRight: 4 }} />
+                  Back to Login
+                </button>
+              </div>
+            </form>
+          )}
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="auth-page">
       <ConfettiFireworks trigger={showConfetti} />
@@ -296,6 +473,9 @@ export default function Login({ initialMode = 'login', onClose }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
+        <button className="auth-home-btn" onClick={handleGoHome} title="Go to Home">
+          <Home size={18} />
+        </button>
         <div className="auth-header">
           <div className="auth-logo">
             <Fuel size={40} />
@@ -406,6 +586,14 @@ export default function Login({ initialMode = 'login', onClose }) {
               />
             </div>
           </div>
+
+          {isLogin && (
+            <div className="forgot-password">
+              <button type="button" onClick={() => { setForgotPassword(true); setError(''); }}>
+                Forgot Password?
+              </button>
+            </div>
+          )}
 
           <Button type="submit" variant="primary" size="lg" fullWidth loading={loading}>
             {isLogin ? 'Sign In' : 'Create Account'}

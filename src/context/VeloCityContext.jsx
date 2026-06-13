@@ -369,6 +369,13 @@ export function VeloCityProvider({ children }) {
     }
   };
 
+  const loginAs = (user, token) => {
+    const t = token || `demo_token_${Date.now()}`;
+    localStorage.setItem('velocity_user', JSON.stringify(user));
+    localStorage.setItem('velocity_token', t);
+    dispatch({ type: 'LOGIN', payload: { user, token: t } });
+  };
+
   const logout = () => {
     localStorage.removeItem('velocity_user');
     localStorage.removeItem('velocity_token');
@@ -762,6 +769,7 @@ const sendNotification = async (driverId, message) => {
       setPage,
       login,
       register,
+      loginAs,
       logout,
       registerVehicle,
       createTransaction,
