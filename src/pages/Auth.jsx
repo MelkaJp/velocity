@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
 import Button from '../components/Button';
+import ConfettiFireworks from '../components/ConfettiFireworks';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Fuel, Mail, Lock, User, Phone, AlertCircle, Car, Bike, Truck, DollarSign, Building2, X, Sparkles } from 'lucide-react';
 import './Auth.css';
@@ -32,6 +33,7 @@ export default function Login({ initialMode = 'login', onClose }) {
   const [showVehicleReg, setShowVehicleReg] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [registeredVehicle, setRegisteredVehicle] = useState(null);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,6 +54,7 @@ export default function Login({ initialMode = 'login', onClose }) {
       
       const result = await register(formData);
       if (result.success) {
+        setShowConfetti(true);
         setIsLogin(true);
         setError('');
       } else {
@@ -82,6 +85,7 @@ export default function Login({ initialMode = 'login', onClose }) {
       }, userResult.user?.id);
 
       if (vehicleResult.success) {
+        setShowConfetti(true);
         setRegisteredVehicle(vehicleResult.vehicle);
       }
     }
@@ -284,6 +288,7 @@ export default function Login({ initialMode = 'login', onClose }) {
 
   return (
     <div className="auth-page">
+      <ConfettiFireworks trigger={showConfetti} />
       <div className="auth-bg"></div>
       
       <motion.div 

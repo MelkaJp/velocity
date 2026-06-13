@@ -4,7 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Fuel, MapPin, Users, Building2, Home, LogOut, User, Activity, Car, Shield, Menu, X, ChevronDown, Settings } from 'lucide-react';
 import './Navbar.css';
 
-export default function Navbar({ currentPortal, onPortalChange, user, onLogout }) {
+import ThemeToggle from './ThemeToggle';
+
+export default function Navbar({ currentPortal, onPortalChange, user, onLogout, theme, onThemeToggle }) {
   const { state } = useVeloCity();
   const role = user?.role;
   const [isScrolled, setIsScrolled] = useState(false);
@@ -178,6 +180,7 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout }
               )}
             </AnimatePresence>
 
+            <ThemeToggle theme={theme} onToggle={onThemeToggle} />
             <motion.button
               className="mobile-menu-btn"
               onClick={() => setMobileMenuOpen(true)}

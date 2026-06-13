@@ -2,6 +2,8 @@ import { useVeloCity } from '../context/VeloCityContext';
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
+import ThemeToggle from '../components/ThemeToggle';
+import Reveal from '../components/Reveal';
 import { 
   Fuel, Shield, Route, AlertTriangle,
   MessageCircle, Smartphone, Monitor, Map,
@@ -19,7 +21,7 @@ import {
 import Auth from './Auth';
 import './Landing.css';
 
-export default function Landing() {
+export default function Landing({ theme, onThemeToggle }) {
   const { setPage } = useVeloCity();
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState('login');
@@ -166,6 +168,7 @@ export default function Landing() {
             <span className="logo-text">VeloCity</span>
           </motion.div>
           <div className="header-actions">
+            <ThemeToggle theme={theme} onToggle={onThemeToggle} />
             <Button variant="ghost" size="sm" onClick={handleLoginClick}>Sign In</Button>
             <Button variant="primary" size="sm" onClick={handleSignupClick}>Get Started</Button>
           </div>

@@ -4,6 +4,9 @@ import { LanguageProvider } from './context/TranslationContext';
 import { ToastProvider } from './components/Toast';
 import { PageTransition } from './components/PageTransition';
 import BackToTop from './components/BackToTop';
+import CookieConsent from './components/CookieConsent';
+import FloatingContact from './components/FloatingContact';
+import LoadingScreen from './components/LoadingScreen';
 import Navbar from './components/Navbar';
 import Landing from './pages/Landing';
 import { AnimatePresence } from 'framer-motion';
@@ -40,6 +43,18 @@ const INFO_PAGES = {
 function VeloCityApp() {
   const { state, dispatch, logout, setPage } = useVeloCity();
   const [scrollPct, setScrollPct] = useState(0);
+  const [theme, setTheme] = useState(() => localStorage.getItem('velocity_theme') || 'dark');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('velocity_theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,6 +64,10 @@ function VeloCityApp() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   if (!state.isAuthenticated && state.currentPortal !== 'landing') {
     return <Auth />;
@@ -60,7 +79,7 @@ function VeloCityApp() {
         const PageComponent = INFO_PAGES[state.currentPage];
         if (PageComponent) return <PageComponent />;
       }
-      return <Landing />;
+      return <Landing theme={theme} onThemeToggle={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} />;
     }
 
     const role = state.user?.role;
@@ -78,7 +97,7 @@ function VeloCityApp() {
       case 'developer_admin':
         return <DeveloperDashboard />;
       default:
-        return <Landing />;
+        return <Landing theme={theme} onThemeToggle={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} />;
     }
   };
 
@@ -91,6 +110,10 @@ function VeloCityApp() {
     }
   };
 
+  const toggleTheme = () => {
+    setTheme(t => t === 'dark' ? 'light' : 'dark');
+  };
+
   return (
     <div className="app">
       {state.isAuthenticated && (
@@ -99,6 +122,8 @@ function VeloCityApp() {
           onPortalChange={handlePortalChange}
           user={state.user}
           onLogout={logout}
+          theme={theme}
+          onThemeToggle={toggleTheme}
         />
       )}
       <main className="main-content">
@@ -110,6 +135,8 @@ function VeloCityApp() {
       </main>
       <div className="scroll-progress" style={{ width: `${scrollPct}%` }} />
       <BackToTop />
+      <FloatingContact />
+      <CookieConsent />
     </div>
   );
 }
