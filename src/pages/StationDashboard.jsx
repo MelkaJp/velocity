@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
-import api from '../utils/api';
+import { useTranslation } from '../context/TranslationContext';
 import { motion } from 'framer-motion';
 import { 
   QrCode, 
@@ -14,11 +14,18 @@ import {
   Shield,
   Zap
 } from 'lucide-react';
-import { vehicleTypes } from '../data/sampleData';
 import './StationDashboard.css';
 
+const vehicleTypes = {
+  bajaj: { id: 'bajaj', value: 'bajaj', label: 'Bajaj (Green)', color: '#2EC4B6', maxTank: 50 },
+  automobile: { id: 'automobile', value: 'auto', label: 'Automobile (Blue)', color: '#3A86FF', maxTank: 150 },
+  auto: { id: 'auto', value: 'auto', label: 'Automobile (Blue)', color: '#3A86FF', maxTank: 150 },
+  truck: { id: 'truck', value: 'truck', label: 'Truck (Black)', color: '#212529', maxTank: 500 },
+};
+
 export default function StationDashboard() {
-  const { state } = useVeloCity();
+  const { state, createTransaction, lookupVehicle } = useVeloCity();
+  const { t } = useTranslation();
   const [scanMode, setScanMode] = useState(false);
   const [scannedCode, setScannedCode] = useState('');
   const [litersInput, setLitersInput] = useState('');
@@ -34,21 +41,20 @@ export default function StationDashboard() {
     }
   }, [state.stations, currentStation]);
 
-  const handleScan = () => {
+  const handleScan = async () => {
     setScanMode(true);
-    setTimeout(() => {
-      if (state.vehicles.length > 0) {
-        setScannedCode(state.vehicles[0].qr_code);
-      }
-      setScanMode(false);
-    }, 2000);
+    const result = await lookupVehicle(scannedCode);
+    setScanMode(false);
+    if (!result.success) {
+      alert('Invalid QR Code - Vehicle not found');
+    }
   };
 
   const handleVerify = async () => {
     if (!scannedCode || !litersInput || !currentStation || processing) return;
     
-    const vehicle = state.vehicles.find(v => v.qr_code === scannedCode);
-    if (!vehicle) {
+    const vehicleResult = await lookupVehicle(scannedCode);
+    if (!vehicleResult.success) {
       alert('Invalid QR Code - Vehicle not found');
       return;
     }
@@ -56,9 +62,9 @@ export default function StationDashboard() {
     setProcessing(true);
 
     try {
-      const result = await api.createTransaction({
-        vehicle_id: vehicle.id,
-        vehicle_plate: vehicle.plate,
+      const result = await createTransaction({
+        vehicle_id: vehicleResult.vehicle.id,
+        vehicle_plate: vehicleResult.vehicle.plate,
         station_id: currentStation.id,
         station_name: currentStation.name,
         liters: parseFloat(litersInput),
@@ -94,14 +100,14 @@ export default function StationDashboard() {
 
   const getTypeColor = (type) => {
     if (!type) return '#2EC4B6';
-    const normalized = type.toLowerCase();
-    return vehicleTypes[normalized?.toUpperCase()]?.color || '#2EC4B6';
+    const vt = vehicleTypes[type.toLowerCase()];
+    return vt?.color || '#2EC4B6';
   };
 
   const getVehicleLabel = (type) => {
     if (!type) return 'Vehicle';
-    const normalized = type.toLowerCase();
-    return vehicleTypes[normalized?.toUpperCase()]?.label || 'Vehicle';
+    const vt = vehicleTypes[type.toLowerCase()];
+    return vt?.label || 'Vehicle';
   };
 
   return (
@@ -220,17 +226,20 @@ export default function StationDashboard() {
                       />
                       <span className="unit">L</span>
                     </div>
-                    {scannedVehicle && (
-                      <div className="capacity-info">
-                        <span>Max capacity: {vehicleTypes[scannedVehicle.type?.toUpperCase()]?.maxTank}L</span>
-                        {litersInput && parseInt(litersInput) > vehicleTypes[scannedVehicle.type?.toUpperCase()]?.maxTank && (
-                          <span className="capacity-warning">
-                            <AlertTriangle size={14} />
-                            Exceeds tank capacity
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    {scannedVehicle && (() => {
+                      const vt = vehicleTypes[scannedVehicle.type?.toLowerCase()];
+                      return (
+                        <div className="capacity-info">
+                          <span>Max capacity: {vt?.maxTank || 150}L</span>
+                          {litersInput && parseInt(litersInput) > (vt?.maxTank || 150) && (
+                            <span className="capacity-warning">
+                              <AlertTriangle size={14} />
+                              Exceeds tank capacity
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                     <button 
                       className="btn-verify"
                       onClick={handleVerify}

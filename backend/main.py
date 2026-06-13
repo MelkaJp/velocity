@@ -141,10 +141,24 @@ class FuelReport(BaseModel):
     station_id: str
     report_type: str
 
-def generate_qr(vehicle_type: str, plate: str) -> str:
+def generate_qr(vehicle_type: str, plate: str, vehicle_id: str = None) -> str:
     prefix = {"bajaj": "BAJ", "automobile": "AUT", "truck": "TRK"}.get(vehicle_type, "UNK")
     clean = "".join(c for c in plate.upper() if c.isalnum())
-    return f"VELO-{prefix}-{clean}-{uuid.uuid4().hex[:6].upper()}"
+    unique_id = vehicle_id[:8] if vehicle_id else uuid.uuid4().hex[:8]
+    return f"VELO-{prefix}-{clean}-{unique_id.upper()}"
+
+def create_qr_data(vehicle: dict) -> str:
+    qr_data = {
+        "id": vehicle.get("id"),
+        "plate": vehicle.get("plate"),
+        "type": vehicle.get("type"),
+        "owner_name": vehicle.get("owner_name"),
+        "phone": vehicle.get("phone"),
+        "qr_code": vehicle.get("qr_code"),
+        "status": vehicle.get("status"),
+        "createdAt": vehicle.get("created_at")
+    }
+    return json.dumps(qr_data)
 
 def check_capacity(vehicle_type: str, liters: float) -> tuple:
     limits = {"bajaj": 50, "automobile": 150, "truck": 500}
@@ -219,9 +233,11 @@ def login(credentials: LoginRequest):
                 "user": {
                     "id": user["id"],
                     "username": user["username"],
-                    "name": user["name"],
+                    "name": user.get("name", ""),
                     "role": user["role"],
-                    "email": user.get("email")
+                    "email": user.get("email", ""),
+                    "phone": user.get("phone", ""),
+                    "station_id": user.get("station_id")
                 }
             }
     raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -252,7 +268,14 @@ def register(data: RegisterRequest):
     db["users"][user_id] = new_user
     save_db(db)
     
-    return {"success": True, "user_id": user_id, "message": "Registration successful"}
+    token = f"TOKEN_{uuid.uuid4().hex}"
+    new_user["token"] = token
+    save_db(db)
+    
+    user_response = new_user.copy()
+    user_response.pop("password", None)
+    
+    return {"success": True, "user": user_response, "token": token, "message": "Registration successful"}
 
 @app.post("/api/auth/logout")
 def logout(token: str = Header(None)):
@@ -262,6 +285,49 @@ def logout(token: str = Header(None)):
             save_db(db)
             return {"success": True, "message": "Logged out"}
     return {"success": True, "message": "No active session"}
+
+@app.post("/api/auth/forgot-password")
+def forgot_password(data: dict):
+    email = data.get("email", "").lower().strip()
+    if not email:
+        return {"success": False, "error": "Email is required"}
+    
+    user_found = None
+    for user in db["users"].values():
+        if user.get("email", "").lower() == email:
+            user_found = user
+            break
+    
+    if user_found:
+        reset_token = f"RESET_{uuid.uuid4().hex}"
+        user_found["reset_token"] = reset_token
+        user_found["reset_expires"] = (datetime.now() + timedelta(hours=1)).isoformat()
+        save_db(db)
+        return {"success": True, "message": f"Password reset link sent. Use token: {reset_token}"}
+    
+    return {"success": True, "message": "If an account exists with this email, a reset link will be sent"}
+
+@app.post("/api/auth/reset-password")
+def reset_password(data: dict):
+    token = data.get("token", "").strip()
+    new_password = data.get("new_password", "")
+    
+    if not token or not new_password:
+        return {"success": False, "error": "Token and new password are required"}
+    
+    for user in db["users"].values():
+        if user.get("reset_token") == token:
+            expires = user.get("reset_expires")
+            if expires and datetime.fromisoformat(expires) < datetime.now():
+                return {"success": False, "error": "Reset token has expired"}
+            
+            user["password"] = hash_password(new_password)
+            user.pop("reset_token", None)
+            user.pop("reset_expires", None)
+            save_db(db)
+            return {"success": True, "message": "Password reset successful"}
+    
+    return {"success": False, "error": "Invalid reset token"}
 
 def get_current_user(authorization: str = Header(None)):
     if not authorization:
@@ -338,7 +404,7 @@ def register_vehicle(vehicle: Vehicle, user = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Only drivers can register vehicles")
     
     vehicle_id = f"V{uuid.uuid4().hex[:6].upper()}"
-    qr_code = generate_qr(vehicle.type, vehicle.plate)
+    qr_code = generate_qr(vehicle.type, vehicle.plate, vehicle_id)
     
     max_capacity = {"bajaj": 50, "automobile": 150, "truck": 500}
     
@@ -350,6 +416,8 @@ def register_vehicle(vehicle: Vehicle, user = Depends(get_current_user)):
         "tank_capacity": vehicle.tank_capacity,
         "max_capacity": max_capacity.get(vehicle.type, 150),
         "qr_code": qr_code,
+        "owner_name": user.get("name", ""),
+        "phone": user.get("phone", ""),
         "status": "active",
         "created_at": datetime.now().isoformat()
     }
@@ -357,6 +425,8 @@ def register_vehicle(vehicle: Vehicle, user = Depends(get_current_user)):
     db["vehicles"][vehicle_id] = new_vehicle
     db["wallets"][vehicle_id] = {"balance": 5000.0, "currency": "USD"}
     save_db(db)
+    
+    new_vehicle["qr_data"] = create_qr_data(new_vehicle)
     
     return {
         "success": True,
@@ -694,13 +764,11 @@ def revenue_report(user = Depends(get_current_user)):
         "integrity_fee_total": sum(t.get("integrity_fee", 0) for t in db["transactions"].values())
     }
 
-@app.get("/api/stats")
-def get_stats(user = Depends(get_current_user)):
+def _compute_stats():
     users_by_role = {}
     for u in db["users"].values():
         role = u.get("role", "unknown")
         users_by_role[role] = users_by_role.get(role, 0) + 1
-    
     return {
         "total_users": len(db["users"]),
         "users_by_role": users_by_role,
@@ -709,6 +777,14 @@ def get_stats(user = Depends(get_current_user)):
         "total_stations": len(db["stations"]),
         "active_subscriptions": sum(1 for s in db["subscriptions"].values() if s.get("status") == "active")
     }
+
+@app.get("/api/stats")
+def get_stats(user = Depends(get_current_user)):
+    return _compute_stats()
+
+@app.get("/api/public/stats")
+def get_public_stats():
+    return _compute_stats()
 
 @app.post("/api/admin/seed")
 def seed_data():
@@ -734,6 +810,6 @@ def seed_data():
 
 if __name__ == "__main__":
     import uvicorn
-    print("🚀 VeloCity API v3.0 - Full Authentication System")
-    print("👥 Roles: Developer Admin, Municipality Admin, Station Manager, Station Worker, Fleet Owner, Driver")
+    print("VeloCity API v3.0 - Full Authentication System")
+    print("Roles: Developer Admin, Municipality Admin, Station Manager, Station Worker, Fleet Owner, Driver")
     uvicorn.run(app, host="0.0.0.0", port=8000)

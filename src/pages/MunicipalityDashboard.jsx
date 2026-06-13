@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
 import { motion } from 'framer-motion';
@@ -24,53 +24,65 @@ import {
 import './MunicipalityDashboard.css';
 
 export default function MunicipalityDashboard() {
-  const { state, CURRENCY_RATES, formatCurrency, convertCurrency } = useVeloCity();
+  const { state, CURRENCY_RATES, formatCurrency, convertCurrency, getStationStats } = useVeloCity();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
   const inspectionAlerts = state.inspectionAlerts || [];
   const [dateRange, setDateRange] = useState('7d');
+  const [stats, setStats] = useState([
+    { label: 'Stations', value: '0', icon: MapPin, color: '#2EC4B6', change: '+0' },
+    { label: 'Vehicles', value: '0', icon: Car, color: '#3A86FF', change: '+0' },
+    { label: 'Revenue', value: '$0', icon: Wallet, color: '#FFD166', change: '+0%' },
+    { label: 'Alerts', value: '0', icon: Shield, color: '#EF476F', change: '0' },
+  ]);
+  const [stations, setStations] = useState([]);
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [dailyRevenue, setDailyRevenue] = useState([]);
+  const maxAmount = dailyRevenue.length > 0 ? Math.max(...dailyRevenue.map(d => d.amount)) : 0;
 
-  const stats = [
-    { icon: MapPin, label: 'Active Stations', value: '42', change: '+3', color: '#06D6A0' },
-    { icon: Car, label: 'Registered Vehicles', value: '8,450', change: '+234', color: '#3A86FF' },
-    { icon: Wallet, label: 'Revenue (Today)', value: formatCurrency(2400000), valueUSD: `$${(2400000 / CURRENCY_RATES.ETB).toFixed(0)}`, change: '+12%', color: '#FF6B35', dual: true },
-    { icon: AlertTriangle, label: 'Inspection Alerts', value: String(inspectionAlerts.length), change: inspectionAlerts.length > 0 ? 'Action Needed' : 'None', color: '#EF476F' },
-    { icon: Wallet, label: 'Revenue (Today)', value: 'FRW 2.4M', change: '+12%', color: '#FF6B35' },
-    { icon: Activity, label: 'Transactions', value: '1,234', change: '+8%', color: '#EF476F' },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        const token = state.token;
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        const stationsRes = await fetch('http://localhost:8000/api/stations', { headers });
+        const stationsData = await stationsRes.json();
+        if (Array.isArray(stationsData)) {
+          setStations(stationsData);
+        }
+        
+        const txRes = await fetch('http://localhost:8000/api/transactions', { headers });
+        const txData = await txRes.json();
+        if (Array.isArray(txData)) {
+          setRecentTransactions(txData.slice(0, 10));
+        }
+      } catch (error) {
+        console.error('Failed to fetch municipality data:', error);
+      }
+    };
+    fetchData();
+  }, [state.token]);
 
-  const stations = [
-    { id: 'ST001', name: 'Shell Kigali Central', volume: 4500, status: 'active', workers: 4 },
-    { id: 'ST002', name: 'Total Gas Kigali', volume: 3800, status: 'active', workers: 3 },
-    { id: 'ST003', name: 'BP Station Kigali', volume: 3200, status: 'active', workers: 3 },
-    { id: 'ST004', name: 'Shell Remera', volume: 2900, status: 'active', workers: 2 },
-    { id: 'ST005', name: 'Total Gas Gisimenti', volume: 2100, status: 'maintenance', workers: 2 },
-    { id: 'ST006', name: 'Shell Kimironko', volume: 1800, status: 'active', workers: 2 },
-  ];
-
-  const recentTransactions = [
-    { id: 'TX001', plate: 'RAB 123D', station: 'Shell Kigali', liters: 45, amount: 2250, status: 'verified', time: '2 min ago' },
-    { id: 'TX002', plate: 'RAB 456E', station: 'Total Gas', liters: 120, amount: 6000, status: 'verified', time: '5 min ago' },
-    { id: 'TX003', plate: 'RAB 789F', station: 'BP Station', liters: 35, amount: 1750, status: 'pending', time: '8 min ago' },
-    { id: 'TX004', plate: 'RAB 321G', station: 'Shell Remera', liters: 90, amount: 4500, status: 'verified', time: '12 min ago' },
-    { id: 'TX005', plate: 'RAB 654H', station: 'Shell Kigali', liters: 60, amount: 3000, status: 'flagged', time: '15 min ago' },
-  ];
-
-  const dailyRevenue = [
-    { day: 'Mon', amount: 1850000 },
-    { day: 'Tue', amount: 2100000 },
-    { day: 'Wed', amount: 1950000 },
-    { day: 'Thu', amount: 2300000 },
-    { day: 'Fri', amount: 2450000 },
-    { day: 'Sat', amount: 2600000 },
-    { day: 'Sun', amount: 2400000 },
-  ];
-
-  const maxAmount = Math.max(...dailyRevenue.map(d => d.amount));
+  useEffect(() => {
+    const demoData = [
+      { day: 'Mon', amount: 8500000 },
+      { day: 'Tue', amount: 7200000 },
+      { day: 'Wed', amount: 9100000 },
+      { day: 'Thu', amount: 6800000 },
+      { day: 'Fri', amount: 10500000 },
+      { day: 'Sat', amount: 11200000 },
+      { day: 'Sun', amount: 8900000 },
+    ];
+    setDailyRevenue(demoData);
+  }, []);
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'stations', label: 'Stations', icon: MapPin },
+    { id: 'stationAdmins', label: 'Station Admins', icon: Users },
+    { id: 'driverApprovals', label: 'Driver Approvals', icon: Car },
     { id: 'transactions', label: 'Transactions', icon: Wallet },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
     { id: 'alerts', label: 'Inspection Alerts', icon: Shield, badge: inspectionAlerts.length },
@@ -279,8 +291,123 @@ export default function MunicipalityDashboard() {
               </div>
             </div>
           </motion.div>
+)}
+        
+        {activeTab === 'stationAdmins' && (
+          <motion.div 
+            className="station-admins-view"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <div className="panel">
+              <div className="panel-header">
+                <h3>Station Administrators</h3>
+                <button className="btn-primary">Add Station Admin</button>
+              </div>
+              <div className="panel-content">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Admin ID</th>
+                      <th>Name</th>
+                      <th>Station</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>SA001</td>
+                      <td>Meron Tadesse</td>
+                      <td>Bole Station</td>
+                      <td>meron@bole.et</td>
+                      <td>+251 912 345 678</td>
+                      <td><span className="status-badge active">Active</span></td>
+                      <td><button className="btn-icon">Revoke</button></td>
+                    </tr>
+                    <tr>
+                      <td>SA002</td>
+                      <td>Dereje Engda</td>
+                      <td>Mexico Station</td>
+                      <td>dereje@mexico.et</td>
+                      <td>+251 912 345 679</td>
+                      <td><span className="status-badge active">Active</span></td>
+                      <td><button className="btn-icon">Revoke</button></td>
+                    </tr>
+                    <tr>
+                      <td>SA003</td>
+                      <td>Hirut Wolde</td>
+                      <td>Kazanchis Station</td>
+                      <td>hirut@kazanchis.et</td>
+                      <td>+251 912 345 680</td>
+                      <td><span className="status-badge suspended">Suspended</span></td>
+                      <td><button className="btn-icon">Restore</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </motion.div>
         )}
-
+        
+        {activeTab === 'driverApprovals' && (
+          <motion.div 
+            className="driver-approvals-view"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <div className="panel">
+              <div className="panel-header">
+                <h3>Pending Driver Registrations</h3>
+                <span className="pending-count">5 pending</span>
+              </div>
+              <div className="panel-content">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Request ID</th>
+                      <th>Driver Name</th>
+                      <th>Vehicle Type</th>
+                      <th>Plate Number</th>
+                      <th>Phone</th>
+                      <th>Requested By</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>DRV001</td>
+                      <td>Bekele Altaye</td>
+                      <td><span className="vehicle-type bajaj">Bajaj</span></td>
+                      <td>ABC-1234</td>
+                      <td>+251 911 111 111</td>
+                      <td>Bole Station (SA001)</td>
+                      <td>
+                        <button className="btn-icon approve"><CheckCircle size={16} /></button>
+                        <button className="btn-icon reject"><AlertCircle size={16} /></button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>DRV002</td>
+                      <td>Tadesse Almaz</td>
+                      <td><span className="vehicle-type auto">Automobile</span></td>
+                      <td>DEF-5678</td>
+                      <td>+251 911 222 222</td>
+                      <td>Mexico Station (SA002)</td>
+                      <td>
+                        <button className="btn-icon approve"><CheckCircle size={16} /></button>
+                        <button className="btn-icon reject"><AlertCircle size={16} /></button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </motion.div>
+        )}
+        
         {activeTab === 'transactions' && (
           <motion.div 
             className="transactions-view"

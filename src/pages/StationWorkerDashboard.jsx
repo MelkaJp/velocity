@@ -20,7 +20,7 @@ import {
 import './StationWorkerDashboard.css';
 
 export default function StationWorkerDashboard() {
-  const { state, createTransaction, isDriverLocked, getLockRemainingTime, convertCurrency, formatCurrency, recordFuelSold, checkStationCapacity, calculateRevenueShare } = useVeloCity();
+  const { state, createTransaction, isDriverLocked, getLockRemainingTime, convertCurrency, formatCurrency, recordFuelSold, checkStationCapacity, calculateRevenueShare, lookupVehicle, getRecentTransactions, getStationStats } = useVeloCity();
   const { t } = useTranslation();
   const [scanning, setScanning] = useState(false);
   const [scannedVehicle, setScannedVehicle] = useState(null);
@@ -30,21 +30,34 @@ export default function StationWorkerDashboard() {
   const [error, setError] = useState('');
   const [pumpCapture, setPumpCapture] = useState(null);
   const [pumpMediaReady, setPumpMediaReady] = useState(false);
-  const [recentScans, setRecentScans] = useState([
-    { id: 'TX001', plate: 'RAB 123D', type: 'bajaj', liters: 45, amount: 2250, currency: 'USD', status: 'verified', time: '2 min ago' },
-    { id: 'TX002', plate: 'RAB 456E', type: 'auto', liters: 120, amount: 6000, currency: 'USD', status: 'verified', time: '5 min ago' },
-    { id: 'TX003', plate: 'RAB 789F', type: 'truck', liters: 350, amount: 17500, currency: 'USD', status: 'verified', time: '8 min ago' },
+  const [recentScans, setRecentScans] = useState([]);
+  const [stats, setStats] = useState([
+    { label: 'Today', value: 0 },
+    { label: 'Liters', value: 0 },
+    { label: 'Revenue', value: 0 },
   ]);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
 
-  const stats = [
-    { label: 'Transactions Today', value: '45' },
-    { label: 'Liters Dispensed', value: '2,340L' },
-    { label: 'Revenue Today', value: formatCurrency(117000) },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      if (state.user?.station_id) {
+        const txResult = await getRecentTransactions(state.user.station_id, 10);
+        if (txResult.success) {
+          setRecentScans(txResult.transactions);
+        }
+        
+        const statsResult = await getStationStats(state.user.station_id);
+        if (statsResult.success) {
+          setStats(statsResult.stats);
+        }
+      }
+    };
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.user?.station_id]);
 
   const startCamera = async () => {
     try {
@@ -73,40 +86,25 @@ export default function StationWorkerDashboard() {
     }
   };
 
-  const handleScan = () => {
+  const handleScan = async (qrCode) => {
     setScanning(true);
     setError('');
     setScannedVehicle(null);
     setDriverVerified(false);
     
-    setTimeout(() => {
-      const mockData = {
-        id: 'V001',
-        plate: 'RAB ' + Math.floor(Math.random() * 900 + 100) + 'D',
-        type: ['bajaj', 'auto', 'truck'][Math.floor(Math.random() * 3)],
-        tankCapacity: 50 + Math.floor(Math.random() * 450),
-        walletBalance: Math.floor(Math.random() * 50000),
-        lastFill: new Date().toISOString(),
-        driver_photo: null,
-        owner_name: 'John Driver',
-        driverId: 'DR' + Math.floor(Math.random() * 10000)
-      };
-      setScannedVehicle(mockData);
-      setScanning(false);
-    }, 2000);
+    const result = await lookupVehicle(qrCode);
+    if (result.success) {
+      setScannedVehicle(result.vehicle);
+    } else {
+      setError(result.error || 'Vehicle not found');
+    }
+    setScanning(false);
   };
 
   const scanQRWithCamera = async () => {
     await startCamera();
     setScanning(true);
-    
     setTimeout(() => {
-      if (scannedVehicle?.driverId && isDriverLocked(scannedVehicle.driverId)) {
-        const lockTime = getLockRemainingTime(scannedVehicle.driverId);
-        setError(`Driver is locked for ${lockTime}. Cannot refuel.`);
-        setScanning(false);
-        return;
-      }
       setScanning(false);
     }, 3000);
   };
@@ -168,7 +166,7 @@ export default function StationWorkerDashboard() {
     const transaction = await createTransaction({
       vehicle_id: scannedVehicle.id,
       driver_id: scannedVehicle.driverId,
-      station_id: 'ST001',
+      station_id: state.user?.station_id || 'ST001',
       worker_id: state.user?.id,
       liters: selectedFuel,
       plate: scannedVehicle.plate,
@@ -180,7 +178,7 @@ export default function StationWorkerDashboard() {
       total_amount: revenueShare.baseAmount,
     });
     
-    recordFuelSold('ST001', selectedFuel, scannedVehicle.driverId);
+    recordFuelSold(state.user?.station_id || 'ST001', selectedFuel, scannedVehicle.user_id || scannedVehicle.driverId);
     
     const newTx = {
       id: transaction.transaction?.id || `TX${Date.now()}`,
@@ -241,7 +239,7 @@ export default function StationWorkerDashboard() {
       <div className="dashboard-header">
         <div className="header-info">
           <h1>Fuel Dispensing</h1>
-          <p>Worker: {state.user?.name} • Shell Kigali Central</p>
+          <p>Worker: {state.user?.name} • Station: {state.user?.station_id || 'N/A'}</p>
         </div>
         <div className="header-stats">
           {stats.map((stat, index) => (
@@ -350,6 +348,26 @@ export default function StationWorkerDashboard() {
                       </div>
                     </div>
                   )}
+                  
+                  <div className="driver-details-grid">
+                    <div className="detail-row">
+                      <span>Driver ID</span>
+                      <span>{scannedVehicle.id}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span>Phone</span>
+                      <span>{scannedVehicle.phone}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span>Owner Name</span>
+                      <span>{scannedVehicle.owner_name}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="verification-notice">
+                    <AlertTriangle size={16} />
+                    <p>MUST verify driver details BEFORE pumping fuel</p>
+                  </div>
 
                   {driverVerified && (
                     <div className="fuel-options">

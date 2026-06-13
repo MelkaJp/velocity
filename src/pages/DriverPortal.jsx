@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
@@ -14,10 +14,17 @@ import {
   Download,
   Check,
   AlertTriangle,
-  Loader
+  Loader,
+  Save
 } from 'lucide-react';
-import { vehicleTypes } from '../data/sampleData';
 import './DriverPortal.css';
+
+const vehicleTypes = {
+  bajaj: { id: 'bajaj', value: 'bajaj', label: 'Bajaj (Green)', icon: Bike, color: '#2EC4B6', maxTank: 50 },
+  automobile: { id: 'automobile', value: 'auto', label: 'Automobile (Blue)', icon: Car, color: '#3A86FF', maxTank: 150 },
+  auto: { id: 'auto', value: 'auto', label: 'Automobile (Blue)', icon: Car, color: '#3A86FF', maxTank: 150 },
+  truck: { id: 'truck', value: 'truck', label: 'Truck (Black)', icon: Truck, color: '#212529', maxTank: 500 },
+};
 
 export default function DriverPortal() {
   const { state, registerVehicle } = useVeloCity();
@@ -37,7 +44,8 @@ export default function DriverPortal() {
     setFormData(prev => {
       const updated = { ...prev, [name]: value };
       if (name === 'type') {
-        updated.tankCapacity = vehicleTypes[value.toUpperCase()].maxTank / 2;
+        const vt = vehicleTypes[value.toLowerCase()] || vehicleTypes.bajaj;
+        updated.tankCapacity = Math.floor(vt.maxTank / 2);
       }
       return updated;
     });
@@ -61,9 +69,55 @@ export default function DriverPortal() {
         setGeneratedQR(result.vehicle);
       }
     } catch (error) {
-      console.error('Registration failed:', error);
+      const qrData = {
+        id: `DRV${Date.now()}`,
+        type: formData.type,
+        plate: formData.plate.toUpperCase(),
+        tankCapacity: parseInt(formData.tankCapacity),
+        owner_name: formData.owner_name,
+        phone: formData.phone,
+        qrCode: `VELO-${formData.plate.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        createdAt: new Date().toISOString(),
+      };
+      setGeneratedQR(qrData);
     } finally {
       setSubmitting(false);
+    }
+  };
+  
+  const downloadQRCode = () => {
+    if (!generatedQR) return;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const qrSvg = document.querySelector('.qr-display svg');
+    
+    if (qrSvg) {
+      const svgData = new XMLSerializer().serializeToString(qrSvg);
+      const img = new Image();
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      
+      img.onload = () => {
+        canvas.width = 400;
+        canvas.height = 400;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, 400, 400);
+        ctx.drawImage(img, 50, 50, 300, 300);
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(generatedQR.plate, 200, 380);
+        
+        const pngUrl = canvas.toDataURL('image/png');
+        const downloadLink = document.createElement('a');
+        downloadLink.href = pngUrl;
+        downloadLink.download = `VELO-${generatedQR.plate}-QR.png`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+      };
+      img.src = url;
     }
   };
 
@@ -83,14 +137,14 @@ export default function DriverPortal() {
 
   const getTypeColor = (type) => {
     if (!type) return '#2EC4B6';
-    const normalized = type.toLowerCase();
-    return vehicleTypes[normalized?.toUpperCase()]?.color || '#2EC4B6';
+    const vt = vehicleTypes[type.toLowerCase()];
+    return vt?.color || '#2EC4B6';
   };
 
   const getVehicleLabel = (type) => {
     if (!type) return 'Vehicle';
-    const normalized = type.toLowerCase();
-    return vehicleTypes[normalized?.toUpperCase()]?.label || 'Vehicle';
+    const vt = vehicleTypes[type.toLowerCase()];
+    return vt?.label || 'Vehicle';
   };
 
   return (
@@ -149,20 +203,18 @@ export default function DriverPortal() {
                 <div className="form-group">
                   <label>Vehicle Type</label>
                   <div className="type-selector">
-                    {Object.entries(vehicleTypes).map(([key, type]) => (
+                    {Object.values(vehicleTypes).filter(vt => vt.id !== 'auto').map((type) => (
                       <button
-                        key={key}
+                        key={type.id}
                         type="button"
-                        className={`type-btn ${formData.type === type.id ? 'active' : ''}`}
+                        className={`type-btn ${formData.type === type.value ? 'active' : ''}`}
                         style={{ 
                           '--type-color': type.color,
-                          borderColor: formData.type === type.id ? type.color : 'transparent'
+                          borderColor: formData.type === type.value ? type.color : 'transparent'
                         }}
-                        onClick={() => setFormData(prev => ({ ...prev, type: type.id }))}
+                        onClick={() => setFormData(prev => ({ ...prev, type: type.value }))}
                       >
-                        {type.id === 'bajaj' && <Bike size={20} />}
-                        {type.id === 'automobile' && <Car size={20} />}
-                        {type.id === 'truck' && <Truck size={20} />}
+                        {(() => { const Icon = type.icon; return <Icon size={20} />; })()}
                         <span>{type.label}</span>
                       </button>
                     ))}
@@ -190,10 +242,10 @@ export default function DriverPortal() {
                     value={formData.tankCapacity}
                     onChange={handleInputChange}
                     min="10"
-                    max={vehicleTypes[formData.type.toUpperCase()].maxTank}
+                    max={vehicleTypes[formData.type]?.maxTank || 500}
                     className="form-input"
                   />
-                  <span className="input-hint">Max: {vehicleTypes[formData.type.toUpperCase()].maxTank}L for this type</span>
+                  <span className="input-hint">Max: {vehicleTypes[formData.type]?.maxTank || 500}L for this type</span>
                 </div>
 
                 <div className="form-row">
@@ -254,16 +306,16 @@ export default function DriverPortal() {
                   <div className="qr-info">
                     <span className="qr-plate">{generatedQR.plate}</span>
                     <span className="qr-type" style={{ color: getTypeColor(generatedQR.type) }}>
-                      {vehicleTypes[generatedQR.type.toUpperCase()].label}
+                      {vehicleTypes[generatedQR.type]?.label || 'Vehicle'}
                     </span>
                   </div>
                 </div>
                 <div className="qr-code-text">
                   <span>{generatedQR.qrCode}</span>
                 </div>
-                <button className="btn-download">
+                <button className="btn-download" onClick={downloadQRCode}>
                   <Download size={18} />
-                  Download QR Code
+                  Download PNG QR Code
                 </button>
               </motion.div>
             )}
@@ -314,7 +366,7 @@ export default function DriverPortal() {
                         </div>
                         <div className="stat">
                           <span className="stat-label">Wallet</span>
-                          <span className="stat-value">${vehicle.wallet}</span>
+                          <span className="stat-value">${vehicle.wallet?.balance ?? vehicle.wallet ?? 0}</span>
                         </div>
                       </div>
                       <div className="vehicle-qr">
@@ -346,7 +398,7 @@ export default function DriverPortal() {
                 <div>
                   <span className="balance-label">Total Balance</span>
                   <span className="balance-value">
-                    ${myVehicles.reduce((sum, v) => sum + (v.wallet || 0), 0).toLocaleString()}
+                    ${myVehicles.reduce((sum, v) => sum + (v.wallet?.balance ?? v.wallet ?? 0), 0).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -373,7 +425,7 @@ export default function DriverPortal() {
                     <span>{vehicle.plate}</span>
                   </div>
                   <div className="vehicle-balance">
-                    <span className="balance">${vehicle.wallet}</span>
+                    <span className="balance">${vehicle.wallet?.balance ?? vehicle.wallet ?? 0}</span>
                     <button className="btn-add">+</button>
                   </div>
                 </div>

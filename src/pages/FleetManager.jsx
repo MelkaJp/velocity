@@ -55,7 +55,7 @@ const weeklyData = [
 ];
 
 export default function FleetManager() {
-  const { state, CURRENCY_RATES, calculateWeeklySpend, calculateMonthlySpend, formatCurrency } = useVeloCity();
+  const { state, registerVehicle, CURRENCY_RATES, calculateWeeklySpend, calculateMonthlySpend, formatCurrency } = useVeloCity();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedFleet, setSelectedFleet] = useState('all');
 
@@ -63,7 +63,7 @@ export default function FleetManager() {
   const [searchResults, setSearchResults] = useState([]);
   
   const fleetVehicles = state.vehicles.filter(v => v.type === 'truck' || v.type === 'automobile');
-  const totalFleetValue = fleetVehicles.reduce((sum, v) => sum + (v.wallet?.balance || 0), 0);
+  const totalFleetValue = fleetVehicles.reduce((sum, v) => sum + (v.wallet?.balance ?? v.wallet ?? 0), 0);
   const avgCostPerVehicle = totalFleetValue / (fleetVehicles.length || 1);
   const activeVehicles = fleetVehicles.filter(v => v.status === 'active').length;
   
@@ -94,7 +94,7 @@ export default function FleetManager() {
     const type = prompt('Enter vehicle type (bajaj/auto/truck):', 'auto');
     const capacity = prompt('Enter tank capacity (liters):', '100');
     
-    await state.registerVehicle({
+    await registerVehicle({
       plate: plate.toUpperCase(),
       type: type.toLowerCase(),
       tankCapacity: parseInt(capacity) || 100,
@@ -351,7 +351,7 @@ export default function FleetManager() {
                         </span>
                       </td>
                       <td>{vehicle.tankCapacity}L</td>
-                      <td className="wallet-cell">${vehicle.wallet}</td>
+                      <td className="wallet-cell">${vehicle.wallet?.balance ?? vehicle.wallet ?? 0}</td>
                       <td>
                         <span className={`status ${vehicle.status}`}>
                           {vehicle.status}
