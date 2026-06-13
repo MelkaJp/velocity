@@ -3,6 +3,8 @@ import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
 import { useToast } from '../components/Toast';
 import Button from '../components/Button';
+import PageHeader from '../components/PageHeader';
+import StatCard from '../components/StatCard';
 import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
@@ -78,22 +80,16 @@ export default function DeveloperDashboard() {
 
   return (
     <div className="developer-dashboard">
-      <div className="dashboard-header">
-        <div className="header-info">
-          <h1>Developer Dashboard</h1>
-          <p>System-wide analytics and administration</p>
-        </div>
-        <div className="header-stats">
-          <div className="stat-badge">
-            <span className="stat-value">{state.stats?.totalVehicles || '28,947'}</span>
-            <span className="stat-label">Vehicles</span>
-          </div>
-          <div className="stat-badge">
-            <span className="stat-value">{state.stats?.totalStations || '156'}</span>
-            <span className="stat-label">Stations</span>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Developer Dashboard"
+        subtitle="System-wide analytics and administration"
+        actions={
+          <Button variant="glass" size="sm" onClick={() => toast.info('Generating report...')}>
+            <BarChart3 size={16} />
+            Generate Report
+          </Button>
+        }
+      />
 
       <div className="dashboard-tabs">
         {tabs.map(tab => (
@@ -115,20 +111,19 @@ export default function DeveloperDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <motion.div className="stats-grid" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
+            <div className="stats-grid">
               {stats.map((stat, index) => (
-                <motion.div key={index} className="stat-card" variants={fadeUp} {...cardHoverLift}>
-                  <div className="stat-icon" style={{ background: `${stat.color}20`, color: stat.color }}>
-                    <stat.icon size={24} />
-                  </div>
-                  <div className="stat-info">
-                    <span className="stat-value">{stat.value}</span>
-                    <span className="stat-label">{stat.label}</span>
-                  </div>
-                  <span className="stat-change positive">{stat.change}</span>
-                </motion.div>
+                <StatCard
+                  key={index}
+                  icon={stat.icon}
+                  label={stat.label}
+                  value={stat.value}
+                  change={stat.change}
+                  color={stat.color}
+                  delay={index * 0.06}
+                />
               ))}
-            </motion.div>
+            </div>
 
             <div className="dashboard-panels">
               <div className="panel">

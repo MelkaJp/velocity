@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { AlertTriangle, RotateCcw, ChevronDown } from 'lucide-react';
 
 export class ErrorBoundary extends Component {
   constructor(props) {
@@ -12,7 +13,6 @@ export class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('Error caught:', error, errorInfo);
-    
     if (this.props.onError) {
       this.props.onError({
         message: error.message,
@@ -26,53 +26,39 @@ export class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#0D1B2A',
-          color: 'white',
-          padding: '20px',
-        }}>
-          <div style={{
-            maxWidth: '500px',
-            textAlign: 'center',
-          }}>
-            <h1 style={{ color: '#EF476F', marginBottom: '20px' }}>
-              Something went wrong
-            </h1>
-            <p style={{ color: '#8D99AE', marginBottom: '20px' }}>
-              We encountered an error. Please try refreshing the page.
+        <div className="error-boundary">
+          <div className="error-boundary-card">
+            <div className="error-boundary-icon">
+              <AlertTriangle size={36} />
+            </div>
+            <h1 className="error-boundary-title">Something went wrong</h1>
+            <p className="error-boundary-desc">
+              We encountered an unexpected error. Please try refreshing the page, or return to the dashboard.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                padding: '12px 24px',
-                background: '#2EC4B6',
-                color: '#0D1B2A',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: '600',
-              }}
-            >
-              Refresh Page
-            </button>
-            <details style={{ marginTop: '20px', textAlign: 'left' }}>
-              <summary style={{ color: '#8D99AE', cursor: 'pointer' }}>
+            <div className="error-boundary-actions">
+              <button
+                className="error-boundary-btn error-boundary-btn-primary"
+                onClick={() => window.location.reload()}
+              >
+                <RotateCcw size={16} />
+                Refresh Page
+              </button>
+              <button
+                className="error-boundary-btn error-boundary-btn-secondary"
+                onClick={() => window.location.href = '/'}
+              >
+                Go to Dashboard
+              </button>
+            </div>
+            <details className="error-boundary-details">
+              <summary>
+                <ChevronDown size={14} />
                 Error Details
               </summary>
-              <pre style={{ 
-                background: '#1B263B', 
-                padding: '10px', 
-                borderRadius: '4px',
-                overflow: 'auto',
-                fontSize: '12px',
-                marginTop: '10px',
-              }}>
-                {this.state.error?.toString()}
-              </pre>
+              <pre>{this.state.error?.toString()}</pre>
+              {this.state.errorInfo?.componentStack && (
+                <pre style={{ marginTop: 8 }}>{this.state.errorInfo.componentStack}</pre>
+              )}
             </details>
           </div>
         </div>
