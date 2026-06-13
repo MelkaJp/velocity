@@ -1,18 +1,23 @@
 import { useVeloCity } from '../context/VeloCityContext';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Fuel, MapPin, Users, Building2, Home, LogOut, User, Activity, Car, Shield, Menu, X, ChevronDown, Settings } from 'lucide-react';
+import { Fuel, MapPin, Users, Building2, Home, LogOut, User, Activity, Car, Shield, Menu, X, ChevronDown, Settings, Search, Bell, Command, PanelLeft, HelpCircle } from 'lucide-react';
 import './Navbar.css';
 
 import ThemeToggle from './ThemeToggle';
 
-export default function Navbar({ currentPortal, onPortalChange, user, onLogout, theme, onThemeToggle }) {
+export default function Navbar({ currentPortal, onPortalChange, user, onLogout, theme, onThemeToggle, onSidebarToggle, sidebarOpen }) {
   const { state } = useVeloCity();
   const role = user?.role;
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [notifOpen, setNotifOpen] = useState(false);
   const menuRef = useRef(null);
+  const notifRef = useRef(null);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,15 +32,38 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setUserMenuOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   useEffect(() => {
+    if (searchOpen && searchRef.current) {
+      searchRef.current.querySelector('input')?.focus();
+    }
+  }, [searchOpen]);
+
+  useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const portalConfig = {
     developer_admin: [
@@ -97,6 +125,16 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
     driver: 'Driver'
   };
 
+  const notifications = [
+    { id: 1, text: 'New station registration pending approval', time: '5m ago', unread: true },
+    { id: 2, text: 'Fuel level alert: Station #042 below 15%', time: '15m ago', unread: true },
+    { id: 3, text: 'Settlement report for March generated', time: '2h ago', unread: false },
+    { id: 4, text: 'Driver #8712 flagged for unusual activity', time: '4h ago', unread: false },
+  ];
+
+  const unreadCount = notifications.filter(n => n.unread).length;
+  const initials = user?.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'U';
+
   return (
     <>
       <motion.nav
@@ -106,37 +144,140 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
         transition={{ type: 'spring', stiffness: 100, damping: 20 }}
       >
         <div className="nav-container">
-          <motion.div
-            className="nav-logo"
-            onClick={() => onPortalChange('landing')}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="logo-icon">
-              <Fuel size={24} />
-            </div>
-            <span className="logo-text">VeloCity</span>
-          </motion.div>
+          <div className="nav-left">
+            <motion.button
+              className="sidebar-toggle"
+              onClick={onSidebarToggle}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Toggle sidebar"
+            >
+              <PanelLeft size={20} className={`sidebar-toggle-icon ${sidebarOpen ? '' : 'closed'}`} />
+            </motion.button>
 
-          <div className="nav-portals">
-            {portals.map((portal, index) => (
-              <motion.button
-                key={portal.id}
-                className={`portal-btn ${currentPortal === portal.id ? 'active' : ''}`}
-                onClick={() => onPortalChange(portal.id)}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <portal.icon size={18} />
-                <span>{portal.label}</span>
-              </motion.button>
-            ))}
+            <motion.div
+              className="nav-logo"
+              onClick={() => onPortalChange('landing')}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="logo-icon">
+                <Fuel size={22} />
+                <div className="logo-glow" />
+              </div>
+              <span className="logo-text">VeloCity</span>
+            </motion.div>
+
+            <div className="nav-portals">
+              {portals.map((portal, index) => (
+                <motion.button
+                  key={portal.id}
+                  className={`portal-btn ${currentPortal === portal.id ? 'active' : ''}`}
+                  onClick={() => onPortalChange(portal.id)}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <portal.icon size={18} />
+                  <span>{portal.label}</span>
+                  {currentPortal === portal.id && (
+                    <motion.div
+                      className="portal-active-indicator"
+                      layoutId="portalIndicator"
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                </motion.button>
+              ))}
+            </div>
           </div>
 
-          <div className="nav-user" ref={menuRef}>
+          <div className="nav-right" ref={menuRef}>
+            <div className="nav-search" ref={searchRef}>
+              <motion.button
+                className={`search-toggle ${searchOpen ? 'open' : ''}`}
+                onClick={() => setSearchOpen(!searchOpen)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Search"
+              >
+                <Search size={18} />
+              </motion.button>
+              <AnimatePresence>
+                {searchOpen && (
+                  <motion.div
+                    className="search-expanded"
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: 260, opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Search size={16} className="search-expanded-icon" />
+                    <input
+                      type="text"
+                      placeholder="Search vehicles, stations..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="search-input"
+                    />
+                    <kbd className="search-kbd">⌘K</kbd>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="nav-notif" ref={notifRef}>
+              <motion.button
+                className="notif-btn"
+                onClick={() => setNotifOpen(!notifOpen)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Notifications"
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="notif-badge">{unreadCount}</span>
+                )}
+              </motion.button>
+
+              <AnimatePresence>
+                {notifOpen && (
+                  <motion.div
+                    className="notif-dropdown"
+                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <div className="notif-header">
+                      <span className="notif-title">Notifications</span>
+                      {unreadCount > 0 && (
+                        <span className="notif-unread-badge">{unreadCount} new</span>
+                      )}
+                    </div>
+                    <div className="notif-list">
+                      {notifications.map((n) => (
+                        <div key={n.id} className={`notif-item ${n.unread ? 'unread' : ''}`}>
+                          <div className={`notif-dot ${n.unread ? 'active' : ''}`} />
+                          <div className="notif-content">
+                            <p className="notif-text">{n.text}</p>
+                            <span className="notif-time">{n.time}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="notif-footer">
+                      <button className="notif-view-all">View All</button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <ThemeToggle theme={theme} onToggle={onThemeToggle} />
+
             <motion.div
               className={`user-info ${userMenuOpen ? 'active' : ''}`}
               initial={{ opacity: 0, scale: 0.9 }}
@@ -145,7 +286,7 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
               onClick={() => setUserMenuOpen(!userMenuOpen)}
             >
               <div className="user-avatar" style={{ background: `linear-gradient(135deg, ${roleColors[role]}, ${roleColors[role]}88)` }}>
-                <User size={16} />
+                {initials}
               </div>
               <div className="user-details">
                 <span className="user-name">{user?.name}</span>
@@ -172,6 +313,11 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
                     <Settings size={16} />
                     Settings
                   </button>
+                  <button className="dropdown-item" onClick={() => { setUserMenuOpen(false); }}>
+                    <HelpCircle size={16} />
+                    Help & Support
+                  </button>
+                  <div className="dropdown-divider" />
                   <button className="dropdown-item danger" onClick={() => { setUserMenuOpen(false); onLogout(); }}>
                     <LogOut size={16} />
                     Sign Out
@@ -180,7 +326,6 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
               )}
             </AnimatePresence>
 
-            <ThemeToggle theme={theme} onToggle={onThemeToggle} />
             <motion.button
               className="mobile-menu-btn"
               onClick={() => setMobileMenuOpen(true)}
@@ -214,7 +359,7 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
               <div className="mobile-menu-header">
                 <div className="mobile-menu-user">
                   <div className="user-avatar" style={{ background: `linear-gradient(135deg, ${roleColors[role]}, ${roleColors[role]}88)` }}>
-                    <User size={18} />
+                    {initials}
                   </div>
                   <div>
                     <div className="mobile-user-name">{user?.name}</div>
@@ -224,6 +369,15 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
                 <button className="mobile-close-btn" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
                   <X size={24} />
                 </button>
+              </div>
+
+              <div className="mobile-search">
+                <Search size={16} className="mobile-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="mobile-search-input"
+                />
               </div>
 
               <div className="mobile-menu-nav">
@@ -240,6 +394,17 @@ export default function Navbar({ currentPortal, onPortalChange, user, onLogout, 
                     <span>{portal.label}</span>
                   </motion.button>
                 ))}
+              </div>
+
+              <div className="mobile-menu-actions">
+                <button className="mobile-action-btn" onClick={() => { setMobileMenuOpen(false); onPortalChange('settings'); }}>
+                  <Settings size={18} />
+                  Settings
+                </button>
+                <button className="mobile-action-btn">
+                  <HelpCircle size={18} />
+                  Help & Support
+                </button>
               </div>
 
               <div className="mobile-menu-footer">

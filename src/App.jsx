@@ -45,6 +45,7 @@ function VeloCityApp() {
   const [scrollPct, setScrollPct] = useState(0);
   const [theme, setTheme] = useState(() => localStorage.getItem('velocity_theme') || 'dark');
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -124,8 +125,57 @@ function VeloCityApp() {
           onLogout={logout}
           theme={theme}
           onThemeToggle={toggleTheme}
+          sidebarOpen={sidebarOpen}
+          onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
         />
       )}
+      <AnimatePresence>
+        {sidebarOpen && state.isAuthenticated && (
+          <motion.aside
+            className="app-sidebar"
+            initial={{ x: -280 }}
+            animate={{ x: 0 }}
+            exit={{ x: -280 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          >
+            <div className="sidebar-header">
+              <span className="sidebar-title">Navigation</span>
+              <button className="sidebar-close" onClick={() => setSidebarOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <nav className="sidebar-nav">
+              <a href="#" className="sidebar-item active">
+                <Home size={18} /> Dashboard
+              </a>
+              <a href="#" className="sidebar-item">
+                <Activity size={18} /> Analytics
+              </a>
+              <a href="#" className="sidebar-item">
+                <Users size={18} /> Users
+              </a>
+              <a href="#" className="sidebar-item">
+                <MapPin size={18} /> Stations
+              </a>
+              <a href="#" className="sidebar-item">
+                <Car size={18} /> Vehicles
+              </a>
+              <a href="#" className="sidebar-item">
+                <Fuel size={18} /> Transactions
+              </a>
+              <a href="#" className="sidebar-item">
+                <Shield size={18} /> Security
+              </a>
+              <a href="#" className="sidebar-item">
+                <Settings size={18} /> Settings
+              </a>
+            </nav>
+            <div className="sidebar-footer">
+              <div className="sidebar-version">v2.4.0</div>
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
       <main className="main-content">
         <AnimatePresence mode="wait">
           <PageTransition key={state.isAuthenticated ? state.user?.role : state.currentPage}>
