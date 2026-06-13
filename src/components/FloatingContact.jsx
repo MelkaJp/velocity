@@ -2,8 +2,9 @@ import { useState, useMemo, useEffect } from 'react';
 import {
   MessageCircle, Send, Phone, X, HelpCircle, ChevronDown,
   Search, Mail, ThumbsUp, ExternalLink, FileText, CreditCard, Truck,
-  Shield, Fuel, User, Settings, AlertCircle, Clock, LifeBuoy, MessageSquare
+  Shield, Fuel, User, Settings, AlertCircle, Clock, LifeBuoy, MessageSquare, Bot
 } from 'lucide-react';
+import ChatBot from './ChatBot';
 import './FloatingContact.css';
 
 const faqData = [
@@ -195,14 +196,7 @@ export default function FloatingContact() {
         {helpOpen && <div className="help-overlay" onClick={closeAll} />}
         {helpOpen && helpPanel}
         {contactOpen && (
-          <div className="m-contact-popup">
-            {quickContact.map((opt, idx) => (
-              <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" className="m-contact-item" style={{ animationDelay: `${idx * 0.08}s` }}>
-                <div className="m-contact-badge" style={{ background: opt.color }}><opt.icon size={18} /></div>
-                <span>{opt.label}</span>
-              </a>
-            ))}
-          </div>
+          <ChatBot onClose={closeAll} />
         )}
         <div className="mobile-bar">
           <button className="mb-btn" onClick={openHelp}>
@@ -211,8 +205,8 @@ export default function FloatingContact() {
           </button>
           <div className="mb-divider" />
           <button className="mb-btn" onClick={toggleContact}>
-            <MessageCircle size={20} />
-            <span>Contact</span>
+            <Bot size={20} />
+            <span>Chat</span>
           </button>
         </div>
       </>
@@ -223,27 +217,20 @@ export default function FloatingContact() {
     <div className="fc-desktop">
       {helpOpen && helpPanel}
       {contactOpen && (
-        <div className="fc-contact-list">
-          {quickContact.map((opt, idx) => (
-            <a key={idx} href={opt.href} target="_blank" rel="noopener noreferrer" className="fc-contact-item" style={{ animationDelay: `${idx * 0.08}s` }}>
-              <div className="fc-contact-badge" style={{ background: opt.color }}><opt.icon size={18} /></div>
-              <span>{opt.label}</span>
-            </a>
-          ))}
-        </div>
-      )}
-      {helpOpen || contactOpen ? (
-        <button className="fc-circle fc-circle--close" onClick={closeAll}>
-          <X size={20} />
-        </button>
-      ) : (
-        <div className="fc-circle-group">
-          <button className="fc-circle fc-circle--contact" onClick={toggleContact} title="Contact">
-            <MessageCircle size={22} />
+          <ChatBot onClose={closeAll} />
+        )}
+        {helpOpen || contactOpen ? (
+          <button className="fc-circle fc-circle--close" onClick={closeAll}>
+            <X size={20} />
           </button>
-          <button className="fc-circle fc-circle--help" onClick={openHelp} title="Help">
-            <HelpCircle size={22} />
-          </button>
+        ) : (
+          <div className="fc-circle-group">
+            <button className="fc-circle fc-circle--contact" onClick={toggleContact} title="Chat">
+              <Bot size={22} />
+            </button>
+            <button className="fc-circle fc-circle--help" onClick={openHelp} title="Help">
+              <HelpCircle size={22} />
+            </button>
         </div>
       )}
     </div>
