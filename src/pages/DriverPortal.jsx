@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
+import PageHeader from '../components/PageHeader';
+import EmptyState from '../components/EmptyState';
 import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { QRCodeSVG } from 'qrcode.react';
@@ -99,15 +101,10 @@ export default function DriverPortal() {
 
   return (
     <div className="driver-portal">
-      <div className="portal-header">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1>Driver Portal</h1>
-          <p>Manage your vehicles, fuel wallet, and transaction history</p>
-        </motion.div>
-      </div>
+      <PageHeader
+        title="Driver Portal"
+        subtitle="Manage your vehicles, fuel wallet, and transaction history"
+      />
 
       <div className="portal-tabs">
         <button 
@@ -227,10 +224,9 @@ export default function DriverPortal() {
                   </div>
                 </div>
 
-                <button type="submit" className="btn-submit" disabled={submitting}>
-                  {submitting ? <Loader size={18} className="spin" /> : <Check size={18} />}
-                  {submitting ? 'Registering...' : 'Generate QR Code'}
-                </button>
+                <Button type="submit" variant="primary" fullWidth disabled={submitting}>
+                  {submitting ? <><Loader size={18} className="spin" /> Registering...</> : <><Check size={18} /> Generate QR Code</>}
+                </Button>
               </form>
             </div>
 
@@ -265,7 +261,7 @@ export default function DriverPortal() {
                 <div className="qr-code-text">
                   <span>{generatedQR.qrCode}</span>
                 </div>
-                <button className="btn-download" onClick={() => {
+                <Button variant="outline" fullWidth onClick={() => {
                   const blob = new Blob([generatedQR.qrCode], { type: 'text/plain' });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
@@ -274,7 +270,7 @@ export default function DriverPortal() {
                 }}>
                   <Download size={18} />
                   Download QR Code
-                </button>
+                </Button>
               </motion.div>
             )}
           </motion.div>
@@ -289,11 +285,7 @@ export default function DriverPortal() {
             <h2>My Vehicles</h2>
             <motion.div className="vehicles-grid" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
               {myVehicles.length === 0 ? (
-                <motion.div className="empty-state" variants={fadeUp}>
-                  <Car size={48} />
-                  <p>No vehicles registered yet</p>
-                  <button onClick={() => setActiveTab('register')}>Register Your First Vehicle</button>
-                </motion.div>
+                <EmptyState icon={Car} title="No vehicles registered yet" action={<Button variant="primary" onClick={() => setActiveTab('register')}>Register Your First Vehicle</Button>} />
               ) : (
                 myVehicles.map(vehicle => {
                   const TypeIcon = getTypeIcon(vehicle.type);
@@ -362,19 +354,19 @@ export default function DriverPortal() {
                 </div>
               </div>
               <div className="wallet-actions">
-                <button className="btn-wallet" onClick={() => {
-                  const amt = prompt('Enter amount to add (USD):');
-                  if (amt) toast.success(`Added $${amt} to wallet`);
-                }}>
-                  <Plus size={18} />
-                  Add Funds
-                </button>
-                <button className="btn-wallet outline" onClick={() => {
-                  const amt = prompt('Enter amount to transfer:');
-                  if (amt) toast.success(`Transfer of $${amt} initiated`);
-                }}>
-                  Transfer
-                </button>
+                <Button variant="primary" onClick={() => {
+                const amt = window.prompt('Enter amount to add (USD):');
+                if (amt) toast.success(`Added $${amt} to wallet`);
+              }}>
+                <Plus size={18} />
+                Add Funds
+              </Button>
+              <Button variant="outline" onClick={() => {
+                const amt = window.prompt('Enter amount to transfer:');
+                if (amt) toast.success(`Transfer of $${amt} initiated`);
+              }}>
+                Transfer
+              </Button>
               </div>
             </div>
 
@@ -391,7 +383,7 @@ export default function DriverPortal() {
                   </div>
                   <div className="vehicle-balance">
                     <span className="balance">${vehicle.wallet}</span>
-                    <button className="btn-add">+</button>
+                    <Button variant="ghost" size="sm">+</Button>
                   </div>
                 </div>
               ))}
@@ -408,10 +400,7 @@ export default function DriverPortal() {
             <h2>Transaction History</h2>
             <motion.div className="transactions-list" variants={staggerContainer(0.08)} initial="hidden" animate="visible">
               {myTransactions.length === 0 ? (
-                <motion.div className="empty-state" variants={fadeUp}>
-                  <History size={48} />
-                  <p>No transactions yet</p>
-                </motion.div>
+                <EmptyState icon={History} title="No transactions yet" />
               ) : (
                 myTransactions.map(tx => (
                   <motion.div key={tx.id} className={`transaction-card ${tx.status}`} variants={fadeUp} {...cardHoverLift}>

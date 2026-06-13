@@ -3,6 +3,9 @@ import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
 import { useToast } from '../components/Toast';
 import Button from '../components/Button';
+import PageHeader from '../components/PageHeader';
+import StatCard from '../components/StatCard';
+import EmptyState from '../components/EmptyState';
 import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
@@ -37,9 +40,8 @@ export default function MunicipalityDashboard() {
   const stats = [
     { icon: MapPin, label: 'Active Stations', value: '42', change: '+3', color: '#06D6A0' },
     { icon: Car, label: 'Registered Vehicles', value: '8,450', change: '+234', color: '#3A86FF' },
-    { icon: Wallet, label: 'Revenue (Today)', value: formatCurrency(2400000), valueUSD: `$${(2400000 / CURRENCY_RATES.ETB).toFixed(0)}`, change: '+12%', color: '#FF6B35', dual: true },
+    { icon: Wallet, label: 'Revenue (Today)', value: formatCurrency(2400000), change: '+12%', color: '#FF6B35' },
     { icon: AlertTriangle, label: 'Inspection Alerts', value: String(inspectionAlerts.length), change: inspectionAlerts.length > 0 ? 'Action Needed' : 'None', color: '#EF476F' },
-    { icon: Wallet, label: 'Revenue (Today)', value: 'FRW 2.4M', change: '+12%', color: '#FF6B35' },
     { icon: Activity, label: 'Transactions', value: '1,234', change: '+8%', color: '#EF476F' },
   ];
 
@@ -82,32 +84,23 @@ export default function MunicipalityDashboard() {
 
   return (
     <div className="municipality-dashboard">
-      <div className="dashboard-header">
-        <div className="header-info">
-          <h1>Municipality Dashboard</h1>
-          <p>City of Kigali Administration</p>
-        </div>
-        <div className="header-actions">
-          <div className="date-filter">
-            <button 
-              className={`date-btn ${dateRange === '7d' ? 'active' : ''}`}
-              onClick={() => setDateRange('7d')}
-            >7 Days</button>
-            <button 
-              className={`date-btn ${dateRange === '30d' ? 'active' : ''}`}
-              onClick={() => setDateRange('30d')}
-            >30 Days</button>
-            <button 
-              className={`date-btn ${dateRange === '90d' ? 'active' : ''}`}
-              onClick={() => setDateRange('90d')}
-            >90 Days</button>
+      <PageHeader
+        title="Municipality Dashboard"
+        subtitle="City of Kigali Administration"
+        actions={
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div className="date-filter">
+              <Button variant={dateRange === '7d' ? 'primary' : 'ghost'} size="sm" onClick={() => setDateRange('7d')}>7 Days</Button>
+              <Button variant={dateRange === '30d' ? 'primary' : 'ghost'} size="sm" onClick={() => setDateRange('30d')}>30 Days</Button>
+              <Button variant={dateRange === '90d' ? 'primary' : 'ghost'} size="sm" onClick={() => setDateRange('90d')}>90 Days</Button>
+            </div>
+            <Button variant="secondary" size="sm" onClick={() => toast.success('Report exported!')}>
+              <Download size={16} />
+              Export
+            </Button>
           </div>
-          <button className="btn-export">
-            <Download size={18} />
-            Export
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="dashboard-tabs">
         {tabs.map(tab => (
@@ -129,20 +122,11 @@ export default function MunicipalityDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <motion.div className="stats-grid" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
+            <div className="stats-grid">
               {stats.map((stat, index) => (
-                <motion.div key={index} className="stat-card" variants={fadeUp} {...cardHoverLift}>
-                  <div className="stat-icon" style={{ background: `${stat.color}20`, color: stat.color }}>
-                    <stat.icon size={24} />
-                  </div>
-                  <div className="stat-info">
-                    <span className="stat-value">{stat.value}</span>
-                    <span className="stat-label">{stat.label}</span>
-                  </div>
-                  <span className="stat-change positive">{stat.change}</span>
-                </motion.div>
+                <StatCard key={index} icon={stat.icon} label={stat.label} value={stat.value} change={stat.change} color={stat.color} delay={index * 0.06} />
               ))}
-            </motion.div>
+            </div>
 
             <div className="dashboard-panels">
               <div className="panel revenue-panel">
@@ -173,7 +157,7 @@ export default function MunicipalityDashboard() {
               <div className="panel">
                 <div className="panel-header">
                   <h3>Recent Transactions</h3>
-                  <button className="btn-link" onClick={() => setActiveTab('transactions')}>View All</button>
+                  <Button variant="ghost" size="sm" onClick={() => setActiveTab('transactions')}>View All</Button>
                 </div>
                 <div className="panel-content">
                   <table className="data-table">
@@ -212,7 +196,7 @@ export default function MunicipalityDashboard() {
             <div className="panel station-overview">
               <div className="panel-header">
                 <h3>Station Performance</h3>
-                <button className="btn-link" onClick={() => setActiveTab('stations')}>Manage</button>
+                <Button variant="ghost" size="sm" onClick={() => setActiveTab('stations')}>Manage</Button>
               </div>
               <div className="panel-content">
                 <motion.div className="station-grid" variants={staggerContainer(0.08)} initial="hidden" animate="visible">
@@ -274,7 +258,7 @@ export default function MunicipalityDashboard() {
                           <span className={`status-badge ${station.status}`}>{station.status}</span>
                         </td>
                         <td>
-                          <button className="btn-icon">View</button>
+                          <Button variant="ghost" size="sm">View</Button>
                         </td>
                       </tr>
                     ))}
@@ -397,10 +381,7 @@ export default function MunicipalityDashboard() {
               </div>
               <div className="panel-content">
                 {inspectionAlerts.length === 0 ? (
-                  <div className="no-alerts">
-                    <CheckCircle size={48} />
-                    <p>No suspicious activity detected</p>
-                  </div>
+                  <EmptyState icon={CheckCircle} title="No suspicious activity detected" />
                 ) : (
                   <div className="alerts-list">
                     {inspectionAlerts.map((alert, index) => (
@@ -411,7 +392,7 @@ export default function MunicipalityDashboard() {
                           <span className="alert-message">{alert.message}</span>
                           <span className="alert-time">{alert.timestamp}</span>
                         </div>
-                        <button className="btn-secondary">Inspect</button>
+                        <Button variant="secondary" size="sm">Inspect</Button>
                       </div>
                     ))}
                   </div>

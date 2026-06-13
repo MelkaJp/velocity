@@ -129,7 +129,7 @@ export default function DeveloperDashboard() {
               <div className="panel">
                 <div className="panel-header">
                   <h3>Recent Transactions</h3>
-                  <button className="btn-link">View All</button>
+                  <Button variant="ghost" size="sm">View All</Button>
                 </div>
                 <div className="panel-content">
                   <table className="data-table">
@@ -227,7 +227,7 @@ export default function DeveloperDashboard() {
                           <span className={`status-badge ${muni.status}`}>{muni.status}</span>
                         </td>
                         <td>
-                          <button className="btn-icon">Edit</button>
+                          <Button variant="ghost" size="sm">Edit</Button>
                         </td>
                       </tr>
                     ))}
@@ -277,7 +277,7 @@ export default function DeveloperDashboard() {
                           <span className="status-badge active">active</span>
                         </td>
                         <td>
-                          <button className="btn-icon">View</button>
+                          <Button variant="ghost" size="sm">View</Button>
                         </td>
                       </tr>
                     ))}

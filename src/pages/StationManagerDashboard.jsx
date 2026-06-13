@@ -3,6 +3,8 @@ import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
 import { useToast } from '../components/Toast';
 import Button from '../components/Button';
+import PageHeader from '../components/PageHeader';
+import StatCard from '../components/StatCard';
 import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
@@ -74,18 +76,16 @@ export default function StationManagerDashboard() {
 
   return (
     <div className="station-manager-dashboard">
-      <div className="dashboard-header">
-        <div className="header-info">
-          <h1>Station Dashboard</h1>
-          <p>Shell Kigali Central • Station ID: ST001</p>
-        </div>
-        <div className="header-status">
-          <span className="status-indicator active">
+      <PageHeader
+        title="Station Dashboard"
+        subtitle="Shell Kigali Central • Station ID: ST001"
+        actions={
+          <span className="status-indicator active" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 999, background: 'rgba(6, 214, 160, 0.1)', color: 'var(--accent-green)', fontSize: '0.82rem', fontWeight: 600 }}>
             <span className="status-dot"></span>
             Station Active
           </span>
-        </div>
-      </div>
+        }
+      />
 
       <div className="dashboard-tabs">
         {tabs.map(tab => (
@@ -107,26 +107,18 @@ export default function StationManagerDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <motion.div className="stats-grid" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
-              {stats.map((stat, index) => (
-                <motion.div key={index} className="stat-card" variants={fadeUp} {...cardHoverLift}>
-                  <div className="stat-icon">
-                    <stat.icon size={24} />
-                  </div>
-                  <div className="stat-info">
-                    <span className="stat-value">{stat.value}</span>
-                    <span className="stat-label">{stat.label}</span>
-                  </div>
-                  <span className="stat-change positive">{stat.change}</span>
-                </motion.div>
-              ))}
-            </motion.div>
+            <div className="stats-grid">
+              <StatCard icon={Car} label="Total Transactions" value="1,234" change="+12%" color="#3A86FF" delay={0} />
+              <StatCard icon={Fuel} label="Fuel Dispensed" value="45,600L" change="+8%" color="#FF6B35" delay={0.06} />
+              <StatCard icon={Wallet} label="Revenue (Today)" value="FRW 2.4M" change="+15%" color="#2EC4B6" delay={0.12} />
+              <StatCard icon={Users} label="Active Workers" value="4" change="0" color="#8D99AE" delay={0.18} />
+            </div>
 
             <div className="dashboard-panels">
               <div className="panel">
                 <div className="panel-header">
                   <h3>Recent Transactions</h3>
-                  <button className="btn-link" onClick={() => setActiveTab('transactions')}>View All</button>
+                  <Button variant="ghost" size="sm" onClick={() => setActiveTab('transactions')}>View All</Button>
                 </div>
                 <div className="panel-content">
                   <table className="data-table">
@@ -165,7 +157,7 @@ export default function StationManagerDashboard() {
               <div className="panel">
                 <div className="panel-header">
                   <h3>Inventory Levels</h3>
-                  <button className="btn-link" onClick={() => setActiveTab('inventory')}>Manage</button>
+                  <Button variant="ghost" size="sm" onClick={() => setActiveTab('inventory')}>Manage</Button>
                 </div>
                 <div className="panel-content">
                   <motion.div variants={staggerContainer(0.05)} initial="hidden" animate="visible">
@@ -195,7 +187,7 @@ export default function StationManagerDashboard() {
             <div className="panel">
               <div className="panel-header">
                 <h3>Worker Status</h3>
-                <button className="btn-link" onClick={() => setActiveTab('workers')}>Manage</button>
+                <Button variant="ghost" size="sm" onClick={() => setActiveTab('workers')}>Manage</Button>
               </div>
               <div className="panel-content">
                 <motion.div className="workers-grid" variants={staggerContainer(0.08)} initial="hidden" animate="visible">
@@ -315,8 +307,8 @@ export default function StationManagerDashboard() {
                         </td>
                         <td>
                           <div className="action-buttons">
-                            <button className="btn-icon"><Edit size={16} /></button>
-                            <button className="btn-icon danger"><Trash2 size={16} /></button>
+                            <Button variant="ghost" size="sm"><Edit size={16} /></Button>
+                            <Button variant="ghost" size="sm"><Trash2 size={16} /></Button>
                           </div>
                         </td>
                       </tr>

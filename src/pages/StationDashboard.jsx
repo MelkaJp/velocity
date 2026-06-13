@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useToast } from '../components/Toast';
 import api from '../utils/api';
+import PageHeader from '../components/PageHeader';
+import Button from '../components/Button';
 import { motion } from 'framer-motion';
 import { 
   QrCode, 
@@ -108,15 +110,10 @@ export default function StationDashboard() {
 
   return (
     <div className="station-dashboard">
-      <div className="portal-header">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1>Station Dashboard</h1>
-          <p>QR scanning, transaction logging, and fuel verification</p>
-        </motion.div>
-      </div>
+      <PageHeader
+        title="Station Dashboard"
+        subtitle="QR scanning, transaction logging, and fuel verification"
+      />
 
       <div className="station-selector">
         <label>Active Station</label>
@@ -200,10 +197,10 @@ export default function StationDashboard() {
                   )}
                 </div>
 
-                <button className="btn-scan" onClick={handleScan} disabled={scanMode}>
+                <Button variant="primary" fullWidth onClick={handleScan} disabled={scanMode}>
                   <QrCode size={20} />
                   {scanMode ? 'Scanning...' : 'Simulate QR Scan'}
-                </button>
+                </Button>
 
                 {scannedCode && (
                   <div className="liters-input-section">
@@ -233,14 +230,9 @@ export default function StationDashboard() {
                         )}
                       </div>
                     )}
-                    <button 
-                      className="btn-verify"
-                      onClick={handleVerify}
-                      disabled={!litersInput || processing}
-                    >
-                      {processing ? <Loader size={18} className="spin" /> : <Shield size={18} />}
-                      {processing ? 'Processing...' : 'Verify & Complete'}
-                    </button>
+                    <Button variant="primary" fullWidth onClick={handleVerify} disabled={!litersInput || processing}>
+                      {processing ? <><Loader size={18} className="spin" /> Processing...</> : <><Shield size={18} /> Verify & Complete</>}
+                    </Button>
                   </div>
                 )}
               </>

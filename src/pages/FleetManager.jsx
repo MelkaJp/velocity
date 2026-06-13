@@ -32,6 +32,9 @@ import {
 } from 'recharts';
 import { useToast } from '../components/Toast';
 import Button from '../components/Button';
+import PageHeader from '../components/PageHeader';
+import StatCard from '../components/StatCard';
+import EmptyState from '../components/EmptyState';
 import './FleetManager.css';
 
 const costData = [
@@ -109,15 +112,10 @@ export default function FleetManager() {
 
   return (
     <div className="fleet-manager">
-      <div className="portal-header">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1>Fleet Manager Portal</h1>
-          <p>Bulk vehicle management, cost analytics, and subscription controls</p>
-        </motion.div>
-      </div>
+      <PageHeader
+        title="Fleet Manager Portal"
+        subtitle="Bulk vehicle management, cost analytics, and subscription controls"
+      />
 
       <div className="portal-tabs">
         <button 
@@ -157,44 +155,12 @@ export default function FleetManager() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <motion.div className="stats-row" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
-              <motion.div className="stat-card-large" variants={fadeUp} {...cardHoverLift}>
-                <div className="stat-icon-wrap">
-                  <Users size={28} />
-                </div>
-                <div className="stat-info">
-                  <span className="stat-value">{fleetVehicles.length}</span>
-                  <span className="stat-label">Total Vehicles</span>
-                </div>
-              </motion.div>
-              <motion.div className="stat-card-large" variants={fadeUp} {...cardHoverLift}>
-                <div className="stat-icon-wrap success">
-                  <TrendingUp size={28} />
-                </div>
-                <div className="stat-info">
-                  <span className="stat-value">{activeVehicles}</span>
-                  <span className="stat-label">Active</span>
-                </div>
-              </motion.div>
-              <motion.div className="stat-card-large" variants={fadeUp} {...cardHoverLift}>
-                <div className="stat-icon-wrap warning">
-                  <Truck size={28} />
-                </div>
-                <div className="stat-info">
-                  <span className="stat-value">{fleetVehicles.filter(v => v.type === 'truck').length}</span>
-                  <span className="stat-label">Trucks</span>
-                </div>
-              </motion.div>
-              <motion.div className="stat-card-large" variants={fadeUp} {...cardHoverLift}>
-                <div className="stat-icon-wrap blue">
-                  <DollarSign size={28} />
-                </div>
-                <div className="stat-info">
-                  <span className="stat-value">{formatCurrency(totalFleetValue)}</span>
-                  <span className="stat-label">Total Wallet</span>
-                </div>
-              </motion.div>
-            </motion.div>
+            <div className="stats-row">
+              <StatCard icon={Users} label="Total Vehicles" value={String(fleetVehicles.length)} color="#8D99AE" delay={0} />
+              <StatCard icon={TrendingUp} label="Active" value={String(activeVehicles)} color="#06D6A0" delay={0.06} />
+              <StatCard icon={Truck} label="Trucks" value={String(fleetVehicles.filter(v => v.type === 'truck').length)} color="#FF6B35" delay={0.12} />
+              <StatCard icon={DollarSign} label="Total Wallet" value={formatCurrency(totalFleetValue)} color="#3A86FF" delay={0.18} />
+            </div>
 
             <motion.div className="cost-summary" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
               <motion.div className="cost-card" variants={fadeUp} {...cardHoverLift}>
@@ -316,10 +282,10 @@ export default function FleetManager() {
                 />
               </div>
               <div className="toolbar-actions">
-                <button className="btn-toolbar" onClick={addVehicle}>
+                <Button variant="secondary" onClick={addVehicle}>
                   <Upload size={18} />
                   Add Vehicle
-                </button>
+                </Button>
                 <Button variant="secondary" onClick={() => toast.success('Fleet data exported as CSV')}>
                   <Download size={18} />
                   Export
@@ -369,10 +335,7 @@ export default function FleetManager() {
             </div>
 
             {fleetVehicles.length === 0 && (
-              <div className="empty-state">
-                <Truck size={48} />
-                <p>No fleet vehicles found</p>
-              </div>
+              <EmptyState icon={Truck} title="No fleet vehicles found" />
             )}
           </motion.div>
         )}

@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
+import PageHeader from '../components/PageHeader';
+import Button from '../components/Button';
 import { motion } from 'framer-motion';
 import { 
   Scan, 
@@ -238,20 +240,20 @@ export default function StationWorkerDashboard() {
     <div className="station-worker-dashboard">
       <canvas ref={canvasRef} style={{ display: 'none' }} />
       
-      <div className="dashboard-header">
-        <div className="header-info">
-          <h1>Fuel Dispensing</h1>
-          <p>Worker: {state.user?.name} • Shell Kigali Central</p>
-        </div>
-        <div className="header-stats">
-          {stats.map((stat, index) => (
-            <div key={index} className="stat-pill">
-              <span className="stat-value">{stat.value}</span>
-              <span className="stat-label">{stat.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <PageHeader
+        title="Fuel Dispensing"
+        subtitle={`Worker: ${state.user?.name} • Shell Kigali Central`}
+        actions={
+          <div style={{ display: 'flex', gap: 12 }}>
+            {stats.map((stat, index) => (
+              <div key={index} className="stat-pill">
+                <span className="stat-value">{stat.value}</span>
+                <span className="stat-label">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        }
+      />
 
       <div className="dashboard-content">
         <div className="scanner-section">
@@ -374,23 +376,19 @@ export default function StationWorkerDashboard() {
                   )}
 
                   <div className="action-buttons">
-                    <button className="btn-cancel" onClick={() => { setScannedVehicle(null); setDriverVerified(false); }}>
+                    <Button variant="ghost" onClick={() => { setScannedVehicle(null); setDriverVerified(false); }}>
                       Cancel
-                    </button>
+                    </Button>
                     {!driverVerified ? (
-                      <button className="btn-confirm" onClick={verifyDriver}>
+                      <Button variant="primary" onClick={verifyDriver}>
                         <CheckCircle size={18} />
                         Verify Driver
-                      </button>
+                      </Button>
                     ) : (
-                      <button 
-                        className="btn-confirm" 
-                        onClick={confirmFuel}
-                        disabled={!selectedFuel}
-                      >
+                      <Button variant="primary" onClick={confirmFuel} disabled={!selectedFuel}>
                         <Fuel size={18} />
                         Dispense Fuel
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </motion.div>
@@ -403,14 +401,10 @@ export default function StationWorkerDashboard() {
             </div>
 
             {selectedFuel > 0 && !pumpCapture && (
-              <button 
-                className="btn-capture"
-                onClick={capturePumpDisplay}
-                disabled={pumpMediaReady}
-              >
+              <Button variant="secondary" fullWidth onClick={capturePumpDisplay} disabled={pumpMediaReady}>
                 <Camera size={20} />
                 {pumpMediaReady ? 'Pump Captured' : 'Capture Pump Display'}
-              </button>
+              </Button>
             )}
 
             {pumpCapture && (
@@ -420,14 +414,10 @@ export default function StationWorkerDashboard() {
               </div>
             )}
 
-            <button 
-              className="btn-scan" 
-              onClick={handleScan} 
-              disabled={scanning || processing}
-            >
+            <Button variant="accent" fullWidth onClick={handleScan} disabled={scanning || processing}>
               <Scan size={20} />
               {scanning ? 'Scanning...' : 'Start QR Scan'}
-            </button>
+            </Button>
           </div>
         </div>
 

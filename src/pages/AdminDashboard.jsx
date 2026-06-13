@@ -3,6 +3,8 @@ import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { useToast } from '../components/Toast';
 import Button from '../components/Button';
+import PageHeader from '../components/PageHeader';
+import StatCard from '../components/StatCard';
 import { fadeUp, staggerContainer, cardHoverLift, scaleIn } from '../animations';
 import { 
   Building2, 
@@ -72,15 +74,10 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
-      <div className="portal-header">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1>Admin Dashboard</h1>
-          <p>System oversight, audit trails, and revenue management</p>
-        </motion.div>
-      </div>
+      <PageHeader
+        title="Admin Dashboard"
+        subtitle="System oversight, audit trails, and revenue management"
+      />
 
       <div className="portal-tabs">
         <button 
@@ -120,54 +117,12 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <motion.div className="stats-grid-admin" variants={staggerContainer(0.1)} initial="hidden" animate="visible">
-              <motion.div className="stat-card-admin primary" variants={fadeUp} {...cardHoverLift}>
-                <div className="stat-icon-bg">
-                  <DollarSign size={32} />
-                </div>
-                <div className="stat-details">
-                  <span className="stat-value">${totalRevenue.toLocaleString()}</span>
-                  <span className="stat-label">Total Revenue (7 days)</span>
-                </div>
-                <div className="stat-trend up">
-                  <TrendingUp size={16} />
-                  +12.5%
-                </div>
-              </motion.div>
-
-              <motion.div className="stat-card-admin" variants={fadeUp} {...cardHoverLift}>
-                <div className="stat-icon-bg green">
-                  <Building2 size={32} />
-                </div>
-                <div className="stat-details">
-                  <span className="stat-value">${municipalShare.toLocaleString()}</span>
-                  <span className="stat-label">Municipality Share (70%)</span>
-                </div>
-              </motion.div>
-
-              <motion.div className="stat-card-admin" variants={fadeUp} {...cardHoverLift}>
-                <div className="stat-icon-bg blue">
-                  <Activity size={32} />
-                </div>
-                <div className="stat-details">
-                  <span className="stat-value">{state.stats.litersTracked.toLocaleString()}L</span>
-                  <span className="stat-label">Total Liters Tracked</span>
-                </div>
-              </motion.div>
-
-              <motion.div className="stat-card-admin warning" variants={fadeUp} {...cardHoverLift}>
-                <div className="stat-icon-bg warning">
-                  <AlertTriangle size={32} />
-                </div>
-                <div className="stat-details">
-                  <span className="stat-value">{anomaliesActive}</span>
-                  <span className="stat-label">Active Anomalies</span>
-                </div>
-                <div className="stat-trend down">
-                  -3 from yesterday
-                </div>
-              </motion.div>
-            </motion.div>
+            <div className="stats-grid-admin">
+              <StatCard icon={DollarSign} label="Total Revenue (7 days)" value={`$${totalRevenue.toLocaleString()}`} change="+12.5%" color="#2EC4B6" delay={0} />
+              <StatCard icon={Building2} label="Municipality Share (70%)" value={`$${municipalShare.toLocaleString()}`} color="#06D6A0" delay={0.06} />
+              <StatCard icon={Activity} label="Total Liters Tracked" value={`${state.stats.litersTracked.toLocaleString()}L`} color="#3A86FF" delay={0.12} />
+              <StatCard icon={AlertTriangle} label="Active Anomalies" value={String(anomaliesActive)} change="-3 from yesterday" color="#EF476F" delay={0.18} />
+            </div>
 
             <div className="main-chart">
               <div className="chart-header">
@@ -457,10 +412,10 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div className="anomaly-actions">
-                      <button className="btn-investigate">
+                      <Button variant="ghost" size="sm">
                         <Eye size={16} />
                         Investigate
-                      </button>
+                      </Button>
                     </div>
                   </motion.div>
                 ))}
