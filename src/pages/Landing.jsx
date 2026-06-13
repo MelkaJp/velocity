@@ -166,8 +166,8 @@ export default function Landing() {
             <span className="logo-text">VeloCity</span>
           </motion.div>
           <div className="header-actions">
-            <button className="btn-login" onClick={handleLoginClick}>Sign In</button>
-            <button className="btn-signup" onClick={handleSignupClick}>Get Started</button>
+            <Button variant="ghost" size="sm" onClick={handleLoginClick}>Sign In</Button>
+            <Button variant="primary" size="sm" onClick={handleSignupClick}>Get Started</Button>
           </div>
         </div>
       </header>

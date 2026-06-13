@@ -3,6 +3,7 @@ import { useVeloCity } from '../context/VeloCityContext';
 import { motion } from 'framer-motion';
 import { Shield, Eye, Lock, User, Database, Bell, Mail, Trash2, ArrowLeft, Home } from 'lucide-react';
 import { fadeUp, fadeIn } from '../animations';
+import Button from '../components/Button';
 import './InfoPage.css';
 
 export default function Privacy() {
@@ -72,8 +73,12 @@ We do NOT sell your personal information to third parties.`
   return (
     <div className="info-page">
       <div className="page-nav">
-        <button onClick={() => setPage('landing')} className="back-btn"><ArrowLeft size={18} /> Back</button>
-        <button onClick={() => setPage('landing')} className="home-btn"><Home size={18} /></button>
+        <Button variant="ghost" size="sm" onClick={() => setPage('landing')}>
+          <ArrowLeft size={18} /> Back
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => setPage('landing')}>
+          <Home size={18} />
+        </Button>
       </div>
       <div className="info-hero">
         <motion.h1 

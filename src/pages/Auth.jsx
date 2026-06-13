@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useVeloCity } from '../context/VeloCityContext';
 import { useTranslation } from '../context/TranslationContext';
+import Button from '../components/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Fuel, Mail, Lock, User, Phone, AlertCircle, Car, Bike, Truck, DollarSign, Building2, X, Sparkles } from 'lucide-react';
 import './Auth.css';
@@ -125,9 +126,9 @@ export default function Login({ initialMode = 'login', onClose }) {
             <p>Your QR code has been generated. Show it at any VeloCity fuel station to fill up.</p>
           </div>
 
-          <button className="btn-primary" onClick={() => window.location.reload()}>
+          <Button variant="primary" size="lg" fullWidth onClick={() => window.location.reload()}>
             Go to Login
-          </button>
+          </Button>
         </motion.div>
       </div>
     );
@@ -401,9 +402,9 @@ export default function Login({ initialMode = 'login', onClose }) {
             </div>
           </div>
 
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Please wait...' : isLogin ? 'Sign In' : 'Continue'}
-          </button>
+          <Button type="submit" variant="primary" size="lg" fullWidth loading={loading}>
+            {isLogin ? 'Sign In' : 'Create Account'}
+          </Button>
 
           <div className="auth-switch">
             {isLogin ? "Don't have an account? " : "Already have an account? "}

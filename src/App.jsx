@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react';
 import { VeloCityProvider, useVeloCity } from './context/VeloCityContext';
 import { LanguageProvider } from './context/TranslationContext';
 import { ToastProvider } from './components/Toast';
 import { PageTransition } from './components/PageTransition';
+import BackToTop from './components/BackToTop';
 import Navbar from './components/Navbar';
 import Landing from './pages/Landing';
 import { AnimatePresence } from 'framer-motion';
@@ -37,6 +39,16 @@ const INFO_PAGES = {
 
 function VeloCityApp() {
   const { state, dispatch, logout, setPage } = useVeloCity();
+  const [scrollPct, setScrollPct] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollPct(h > 0 ? (window.scrollY / h) * 100 : 0);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   if (!state.isAuthenticated && state.currentPortal !== 'landing') {
     return <Auth />;
@@ -75,6 +87,7 @@ function VeloCityApp() {
       logout();
     } else {
       dispatch({ type: 'SET_PORTAL', payload: portal });
+      localStorage.setItem('velocity_currentPortal', portal);
     }
   };
 
@@ -95,6 +108,8 @@ function VeloCityApp() {
           </PageTransition>
         </AnimatePresence>
       </main>
+      <div className="scroll-progress" style={{ width: `${scrollPct}%` }} />
+      <BackToTop />
     </div>
   );
 }

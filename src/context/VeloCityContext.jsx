@@ -199,6 +199,16 @@ export function VeloCityProvider({ children }) {
       const savedUser = localStorage.getItem('velocity_user');
       const savedToken = localStorage.getItem('velocity_token');
       const savedCurrency = localStorage.getItem('velocity_currency') || 'USD';
+      const savedPage = localStorage.getItem('velocity_currentPage');
+      const savedPortal = localStorage.getItem('velocity_currentPortal');
+      
+      if (savedPage && savedPage !== 'landing') {
+        dispatch({ type: 'SET_PAGE', payload: savedPage });
+      }
+      
+      if (savedPortal) {
+        dispatch({ type: 'SET_PORTAL', payload: savedPortal });
+      }
       
       if (savedUser && savedToken) {
         dispatch({ type: 'LOGIN', payload: { user: JSON.parse(savedUser), token: savedToken } });
@@ -362,6 +372,8 @@ export function VeloCityProvider({ children }) {
   const logout = () => {
     localStorage.removeItem('velocity_user');
     localStorage.removeItem('velocity_token');
+    localStorage.removeItem('velocity_currentPage');
+    localStorage.removeItem('velocity_currentPortal');
     dispatch({ type: 'LOGOUT' });
   };
 
@@ -723,6 +735,8 @@ const calculateSubscriptionRevenue = (subscriptionFee) => {
 
   const setPage = (page) => {
     dispatch({ type: 'SET_PAGE', payload: page });
+    localStorage.setItem('velocity_currentPage', page);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
 const sendNotification = async (driverId, message) => {
